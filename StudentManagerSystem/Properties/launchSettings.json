@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "StudentManageSystem": {
+      "commandName": "Project",
+      "commandLineArgs": "> log.txt",
+      "nativeDebugging": false
+    }
+  }
+}
