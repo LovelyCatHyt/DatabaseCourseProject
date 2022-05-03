@@ -1,0 +1,51 @@
+<Window x:Class="StudentManageSystem.NewStudentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StudentManageSystem"
+        mc:Ignorable="d"
+        Title="学生管理系统 - 添加学生" Height="450" Width="800">
+    <Window.Resources>
+        <CollectionViewSource x:Key="newStudentSource"></CollectionViewSource>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="9*"></RowDefinition>
+            <RowDefinition Height="1.2*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <DataGrid x:Name="toAddStudentGrid" Margin="10,10,10,100" AddingNewItem="toAddStudentGrid_AddingNewItem"
+                  EnableRowVirtualization="True"
+                  CanUserAddRows="True"
+                  IsReadOnly="False"
+                  AutoGenerateColumns="False"
+                  ItemsSource ="{Binding Source={StaticResource newStudentSource}}"
+        >
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Id}" Header="学号" 
+                                    Width="Auto"
+                                    IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Name}" Header="姓名" 
+                                    Width="Auto"/>
+                <DataGridTemplateColumn x:Name="studentBirth" Header="出生日期"
+                                        Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding Birth}" BorderThickness="0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridComboBoxColumn x:Name="studentGender" Header="性别" SelectedValueBinding="{Binding Gender, Mode=TwoWay}" 
+                                        Width="Auto"/>
+                <DataGridComboBoxColumn x:Name="studentClass" Header="班级" SelectedValueBinding="{Binding ClassId,Mode=TwoWay}" 
+                                        Width="Auto"/>
+
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button x:Name="saveButton" Content="提交" HorizontalAlignment="Center" Margin="5,5" VerticalAlignment="Center" MinWidth="40" MinHeight="29" Click="saveButton_Click"/>
+            <Button x:Name="cancelButton" Content="取消" HorizontalAlignment="Center" Margin="5,5" VerticalAlignment="Center" RenderTransformOrigin="-0.401,1.354" MinWidth="40" MinHeight="29" Click="cancelButton_Click"/>
+        </StackPanel>
+
+    </Grid>
+</Window>

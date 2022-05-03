@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StudentManageSystem"
+        xmlns:controls="clr-namespace:StudentManageSystem.Controls"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" HorizontalContentAlignment="Left">
     <Window.Resources>
@@ -11,30 +12,58 @@
     </Window.Resources>
     <Grid>
         <DataGrid x:Name="studentsDataGrid" AutoGenerateColumns="False" 
-                  EnableRowVirtualization="True" 
+                  EnableRowVirtualization="False" 
                   ItemsSource="{Binding Source={StaticResource studentViewSource}}" 
                   MinWidth="600" MinHeight="100" Margin="10,10,10,0"
-                  VerticalAlignment="Top" HorizontalAlignment="Center"
+                  VerticalAlignment="Top" HorizontalAlignment="Stretch"
                   RowDetailsVisibilityMode="VisibleWhenSelected"
                   
-                  CanUserAddRows="False" CurrentCellChanged="studentsDataGrid_CurrentCellChanged">
+                  CanUserAddRows="False" CurrentCellChanged="studentsDataGrid_CurrentCellChanged" MouseDown="studentsDataGrid_MouseDown">
+            <DataGrid.Resources>
+                <!--DataTemplate for Published Date column defined in Grid.Resources.  PublishDate is a property on the ItemsSource of type DateTime -->
+                <DataTemplate x:Key="DateTemplate" >
+                    <StackPanel Width="20" Height="30">
+                        <Border Background="LightBlue" BorderBrush="Black" BorderThickness="1">
+                            <TextBlock Text="{Binding Birth, StringFormat={}{0:MMM}}" FontSize="8" HorizontalAlignment="Center" />
+                        </Border>
+                        <Border Background="White" BorderBrush="Black" BorderThickness="1">
+                            <TextBlock Text="{Binding PublishDate, StringFormat={}{0:yyyy}}" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+                <!--DataTemplate for the Published Date column when in edit mode. -->
+                <DataTemplate x:Key="EditingDateTemplate">
+                    <DatePicker SelectedDate="{Binding PublishDate}"  />
+                </DataTemplate>
+            </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id}" Header="学号" 
                                     Width="Auto"
                                     IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Name}" Header="姓名" 
                                     Width="Auto"/>
-                <DataGridTextColumn Binding="{Binding Birth}" Header="出生日期"
+                <DataGridTemplateColumn x:Name="studentBirth" Header="出生日期"
+                                    Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding Birth}" BorderThickness="0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridComboBoxColumn x:Name="studentGender" Header="性别" SelectedValueBinding="{Binding Gender, Mode=TwoWay}" 
                                     Width="Auto"/>
-                <DataGridComboBoxColumn x:Name="studentGender" Header="性别"
-                                        SelectedValueBinding="{Binding Gender, Mode=TwoWay}" 
-                                    Width="Auto"/>
-                <DataGridTextColumn Binding="{Binding ClassId}" Header="班级"
+                <DataGridComboBoxColumn x:Name="studentClass" Header="班级" SelectedValueBinding="{Binding ClassId,Mode=TwoWay}" 
                                     Width="Auto"/>
 
             </DataGrid.Columns>
         </DataGrid>
-        <Button x:Name="SaveChangesButton" Content="保存" HorizontalAlignment="Center" Margin="0,144,0,0" VerticalAlignment="Top" Height="64" Width="160" Click="SaveChangesButton_Click"/>
-
+        <Button x:Name="SaveChangesButton" Content="保存" Click="SaveChangesButton_Click"
+            HorizontalAlignment="Center" Margin="0,144,0,10" VerticalAlignment="Bottom" Height="30" Width="160"/>
+        <Button x:Name="AddStudentButton" Content="+" Click="AddStudentButton_Click"
+            HorizontalAlignment="Center" Margin="210,0,0,10" VerticalAlignment="Bottom" Height="30" Width="40"/>
+        <Button x:Name="RemoveStudentButton" Content="-" Click="RemoveStudentButton_Click"
+            HorizontalAlignment="Center" Margin="300,0,0,10" VerticalAlignment="Bottom" Height="30" Width="40"/>
+        <Button x:Name="RevertAllButton" Content="↺" Click="RevertAllButton_Click"
+            HorizontalAlignment="Center" Margin="-210,0,0,10" VerticalAlignment="Bottom" Height="30" Width="40"/>
     </Grid>
 </Window>

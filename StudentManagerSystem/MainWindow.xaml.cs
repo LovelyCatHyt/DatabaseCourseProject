@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.EntityFrameworkCore;
 using StudentManageSystem.DataBase;
@@ -40,7 +41,8 @@ namespace StudentManageSystem
 
         private bool _dataBaseDirty;
         private StudentDataBase? _studentDbContext;
-        private ICollection<Student>? _studentDataSource;
+        private ObservableCollection<Student>? _studentDataSource;
+        private NewStudentWindow? _newStudentWindow;
 
         public MainWindow()
         {
@@ -55,6 +57,9 @@ namespace StudentManageSystem
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
             DataBaseDirty = false;
             studentGender.ItemsSource = new[] { "男", "女" };
+            var classIdsQueryable = StudentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
+            // Debug.WriteLine($"Query class id: \n{classIdsQueryable.ToQueryString()}");
+            studentClass.ItemsSource = classIdsQueryable.ToArray();
 
             // 初始化数据库
             StudentDataBase.Database.Migrate();
@@ -63,12 +68,70 @@ namespace StudentManageSystem
             // 绑定数据源
             _studentDataSource = StudentDataBase.Students.Local.ToObservableCollection();
             studentViewSource.Source = _studentDataSource;
-            
+
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            _newStudentWindow?.Close();
             _studentDbContext!.Dispose();
+        }
+        
+        private void studentsDataGrid_CurrentCellChanged(object sender, EventArgs e)
+        {
+            if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+        }
+
+        private int RollBack(DbContext ctx)
+        {
+            var reverted = 0;
+            foreach (var entityEntry in ctx.ChangeTracker.Entries().Where(e => e.State != EntityState.Unchanged))
+            {
+                switch (entityEntry.State)
+                {
+                    case EntityState.Deleted:
+                        entityEntry.State = EntityState.Unchanged;
+                        break;
+                    case EntityState.Modified:
+                        entityEntry.CurrentValues.SetValues(entityEntry.OriginalValues);
+                        entityEntry.State = EntityState.Unchanged;
+                        break;
+                    case EntityState.Added:
+                        entityEntry.State = EntityState.Detached;
+                        break;
+                }
+
+                reverted++;
+            }
+
+            return reverted;
+        }
+
+        private void RefreshDataGrid()
+        {
+            studentViewSource.Source = _studentDataSource = StudentDataBase.Students.Local.ToObservableCollection();
+            studentsDataGrid.ItemsSource = _studentDataSource;
+        }
+
+        private void studentsDataGrid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+        }
+
+        private void RevertAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            var reverted = RollBack(StudentDataBase);
+            Debug.WriteLine($"{reverted} Changes removed.");
+            DataBaseDirty = false;
+            RefreshDataGrid();
+        }
+
+        private void AddStudentButton_Click(object sender, RoutedEventArgs e)
+        {
+            _newStudentWindow ??= new NewStudentWindow(StudentDataBase);
+            _newStudentWindow.Closed += (_, _) => _newStudentWindow = new NewStudentWindow(StudentDataBase);
+            _newStudentWindow.Show();
+            _newStudentWindow.Activate();
         }
 
         private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
@@ -76,10 +139,15 @@ namespace StudentManageSystem
             StudentDataBase.SaveChanges();
             DataBaseDirty = false;
         }
-        
-        private void studentsDataGrid_CurrentCellChanged(object sender, System.EventArgs e)
+
+        private void RemoveStudentButton_Click(object sender, RoutedEventArgs e)
         {
-            if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            if (studentsDataGrid.CurrentItem != null)
+            {
+                studentsDataGrid.Items.Remove(studentsDataGrid.SelectedItem);
+            }
         }
+
+        
     }
 }
