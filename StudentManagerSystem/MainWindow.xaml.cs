@@ -6,7 +6,9 @@ using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using StudentManageSystem.DataBase;
 using StudentManageSystem.Entities;
@@ -20,10 +22,11 @@ namespace StudentManageSystem
     {
 
         public const string BasicTitle = "学生管理系统";
+
         /// <summary>
         /// 学生数据库
         /// </summary>
-        public StudentDataBase StudentDataBase => _studentDbContext ??= new StudentDataBase();
+        public StudentDataBase studentDataBase;
         public bool DataBaseDirty
         {
             get => _dataBaseDirty;
@@ -31,6 +34,7 @@ namespace StudentManageSystem
             {
                 _dataBaseDirty = value;
                 Title = _dataBaseDirty ? $"{BasicTitle}*" : BasicTitle;
+                if (value) CheckDataValid();
             }
         }
 
@@ -40,9 +44,10 @@ namespace StudentManageSystem
         public CollectionViewSource studentViewSource;
 
         private bool _dataBaseDirty;
-        private StudentDataBase? _studentDbContext;
+        private StudentDbValidator _studentDbValidator;
         private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
+
 
         public MainWindow()
         {
@@ -53,20 +58,22 @@ namespace StudentManageSystem
                             "/---------------------------------/");
 
             InitializeComponent();
+
+            // 初始化数据库
+            studentDataBase = new StudentDataBase();
+            studentDataBase.Database.Migrate();
+            studentDataBase.Students.Load();
+            _studentDbValidator = new StudentDbValidator(studentDataBase);
+
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
             DataBaseDirty = false;
             studentGender.ItemsSource = new[] { "男", "女" };
-            var classIdsQueryable = StudentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
-            // Debug.WriteLine($"Query class id: \n{classIdsQueryable.ToQueryString()}");
+            var classIdsQueryable = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
             studentClass.ItemsSource = classIdsQueryable.ToArray();
 
-            // 初始化数据库
-            StudentDataBase.Database.Migrate();
-            StudentDataBase.Students.Load();
-
             // 绑定数据源
-            _studentDataSource = StudentDataBase.Students.Local.ToObservableCollection();
+            _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
             studentViewSource.Source = _studentDataSource;
 
         }
@@ -74,12 +81,16 @@ namespace StudentManageSystem
         protected override void OnClosing(CancelEventArgs e)
         {
             _newStudentWindow?.Close();
-            _studentDbContext!.Dispose();
+            studentDataBase.Dispose();
         }
 
         private void studentsDataGrid_CurrentCellChanged(object sender, EventArgs e)
         {
-            if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            // TODO: remove debug
+            var temp = DataBaseDirty;
+            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            if(temp != DataBaseDirty)
+                Debug.WriteLine("Detect change in CurrentCellChanged");
         }
 
         private int RollBack(DbContext ctx)
@@ -107,20 +118,31 @@ namespace StudentManageSystem
             return reverted;
         }
 
+        private bool CheckDataValid()
+        {
+            var valid = _studentDbValidator.ValidateData(_studentDataSource, out var msg);
+            ErrorMsg.Text = valid ? "" : msg;
+            return valid;
+        }
+
         private void RefreshDataGrid()
         {
-            studentViewSource.Source = _studentDataSource = StudentDataBase.Students.Local.ToObservableCollection();
+            studentViewSource.Source = _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
             studentsDataGrid.ItemsSource = _studentDataSource;
+            CheckDataValid();
         }
 
         private void studentsDataGrid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            var temp = DataBaseDirty;
+            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            if(temp!= DataBaseDirty)
+                Debug.WriteLine("Detect change in MouseDown");
         }
 
         private void RevertAllButton_Click(object sender, RoutedEventArgs e)
         {
-            var reverted = RollBack(StudentDataBase);
+            var reverted = RollBack(studentDataBase);
             Debug.WriteLine($"{reverted} Changes removed.");
             DataBaseDirty = false;
             RefreshDataGrid();
@@ -128,15 +150,15 @@ namespace StudentManageSystem
 
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
-            _newStudentWindow ??= new NewStudentWindow(StudentDataBase);
-            _newStudentWindow.Closed += (_, _) => _newStudentWindow = new NewStudentWindow(StudentDataBase);
+            _newStudentWindow ??= new NewStudentWindow(studentDataBase);
+            _newStudentWindow.Closed += (_, _) => _newStudentWindow = new NewStudentWindow(studentDataBase);
             _newStudentWindow.Show();
             _newStudentWindow.Activate();
         }
 
         private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
         {
-            StudentDataBase.SaveChanges();
+            studentDataBase.SaveChanges();
             DataBaseDirty = false;
         }
 
@@ -147,6 +169,21 @@ namespace StudentManageSystem
             {
                 _studentDataSource.Remove(student);
             }
+        }
+
+        private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            //if (e.RemovedItems.Count > 0 && e.AddedItems.Count > 0) Debug.WriteLine($"perv: {e.RemovedItems[0]}, new: {e.AddedItems[0]}");
+            //Debug.WriteLine($"Origin source: {e.OriginalSource}");
+            //var temp = (Visual?)sender;
+            //while (temp != null && temp is not DataGridRow) temp = VisualTreeHelper.GetParent(temp) as Visual;
+            //if (temp == null) return;
+            //var row = (DataGridRow) temp;
+            //row.DataContext
+            var temp = DataBaseDirty;
+            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            if (temp != DataBaseDirty)
+                Debug.WriteLine("Detect change in DatePicker_OnSelectedDateChanged");
         }
     }
 }

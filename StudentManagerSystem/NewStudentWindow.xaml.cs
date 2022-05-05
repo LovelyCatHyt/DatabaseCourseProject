@@ -80,7 +80,7 @@ namespace StudentManageSystem
 
         public bool CheckDataValid()
         {
-            var valid = _dbValidator.Validate(_newStudentList, out var msg);
+            var valid = _dbValidator.ValidateNewData(_newStudentList, out var msg);
             ErrorMsg.Content = valid ? "" : msg;
             saveButton.IsEnabled = valid;
             return valid;
