@@ -41,7 +41,7 @@ namespace StudentManageSystem
 
         private bool _dataBaseDirty;
         private StudentDataBase? _studentDbContext;
-        private ObservableCollection<Student>? _studentDataSource;
+        private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
 
         public MainWindow()
@@ -76,7 +76,7 @@ namespace StudentManageSystem
             _newStudentWindow?.Close();
             _studentDbContext!.Dispose();
         }
-        
+
         private void studentsDataGrid_CurrentCellChanged(object sender, EventArgs e)
         {
             if (StudentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
@@ -142,12 +142,11 @@ namespace StudentManageSystem
 
         private void RemoveStudentButton_Click(object sender, RoutedEventArgs e)
         {
-            if (studentsDataGrid.CurrentItem != null)
+            var students = studentsDataGrid.SelectedItems.OfType<Student>().ToArray();
+            foreach (var student in students)
             {
-                studentsDataGrid.Items.Remove(studentsDataGrid.SelectedItem);
+                _studentDataSource.Remove(student);
             }
         }
-
-        
     }
 }
