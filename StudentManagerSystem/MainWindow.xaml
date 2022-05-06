@@ -5,39 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StudentManageSystem"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" HorizontalContentAlignment="Left">
+        Title="MainWindow" Height="600" Width="1000" HorizontalContentAlignment="Left">
     <Window.Resources>
         <CollectionViewSource x:Key="studentViewSource"/>
+        <CollectionViewSource x:Key="classViewSource"/>
+        <CollectionViewSource x:Key="departmentViewSource"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="197*"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <!--学生表-->
         <DataGrid x:Name="studentsDataGrid" AutoGenerateColumns="False" 
+                  Grid.Row="0"
+                  Grid.Column="0"
                   EnableRowVirtualization="False" 
                   ItemsSource="{Binding Source={StaticResource studentViewSource}}" 
-                  MinWidth="600" MinHeight="100" Margin="10,10,10,4"
+                  Margin="5,5,5,5"
                   RowDetailsVisibilityMode="VisibleWhenSelected"
-                  CanUserAddRows="False" CurrentCellChanged="studentsDataGrid_CurrentCellChanged" MouseDown="studentsDataGrid_MouseDown">
-            <DataGrid.Resources>
-                <!--DataTemplate for Published Date column defined in Grid.Resources.  PublishDate is a property on the ItemsSource of type DateTime -->
-                <DataTemplate x:Key="DateTemplate" >
-                    <StackPanel Width="20" Height="30">
-                        <Border Background="LightBlue" BorderBrush="Black" BorderThickness="1">
-                            <TextBlock Text="{Binding Birth, StringFormat={}{0:MMM}}" FontSize="8" HorizontalAlignment="Center" />
-                        </Border>
-                        <Border Background="White" BorderBrush="Black" BorderThickness="1">
-                            <TextBlock Text="{Binding PublishDate, StringFormat={}{0:yyyy}}" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" />
-                        </Border>
-                    </StackPanel>
-                </DataTemplate>
-                <!--DataTemplate for the Published Date column when in edit mode. -->
-                <DataTemplate x:Key="EditingDateTemplate">
-                    <DatePicker SelectedDate="{Binding PublishDate}"  />
-                </DataTemplate>
-            </DataGrid.Resources>
+                  CanUserAddRows="False" CurrentCellChanged="DataGridCellChanged" MouseDown="DataGridMouseDown">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id, UpdateSourceTrigger=PropertyChanged}" Header="学号" 
                                     Width="Auto"
@@ -56,22 +52,62 @@
                                     Width="Auto"/>
                 <DataGridComboBoxColumn x:Name="studentClass" Header="班级" SelectedValueBinding="{Binding ClassId,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                     Width="Auto"/>
-
             </DataGrid.Columns>
         </DataGrid>
-        <Border Grid.Row="1" BorderThickness="5" BorderBrush="Wheat">
-            <TextBlock x:Name="ErrorMsg" Text="">
-            </TextBlock>
-        </Border>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Width="320">
-            <Button x:Name="RevertAllButton" Content="↺" Click="RevertAllButton_Click"
-                HorizontalAlignment="Center" Margin="5,5,5,5" VerticalAlignment="Center" Height="30" Width="40" Grid.Row="1"/>
-            <Button x:Name="SaveChangesButton" Content="保存" Click="SaveChangesButton_Click"
-                HorizontalAlignment="Center" Margin="5,5,5,5" VerticalAlignment="Center" Height="30" Width="160" Grid.Row="1"/>
+        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
             <Button x:Name="AddStudentButton" Content="+" Click="AddStudentButton_Click"
-                HorizontalAlignment="Center" Margin="5,5,5,5" VerticalAlignment="Center" Height="30" Width="40" Grid.Row="1"/>
+                HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
             <Button x:Name="RemoveStudentButton" Content="-" Click="RemoveStudentButton_Click"
-                HorizontalAlignment="Center" Margin="5,5,5,5" VerticalAlignment="Center" Height="30" Width="40" Grid.Row="1"/>
+                HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
-        </Grid>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center" Margin="0,0,0,32"></GridSplitter>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center" Margin="0,0,0,32"></GridSplitter>
+        <!--班级表-->
+        <DataGrid x:Name="classDataGrid" Grid.Row="0" Grid.Column="2" Margin="5,5,5,5" AutoGenerateColumns="False"
+                  EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                  RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                  ItemsSource="{Binding Source={StaticResource classViewSource}}"
+                  CurrentCellChanged="DataGridCellChanged"
+                  MouseDown="DataGridMouseDown">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}"></DataGridTextColumn>
+                <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+            <Button x:Name="AddClassButton" Content="+" Click="AddClassButton_Click"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            <Button x:Name="RemoveClassButton" Content="-" Click="RemoveClassButton_Click"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+        </StackPanel>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center" Margin="0,0,0,32"></GridSplitter>
+        <!--院系表-->
+        <DataGrid x:Name="departmentDataGrid" Grid.Row="0" Grid.Column="4" Margin="5,5,5,5" AutoGenerateColumns="False"
+                  EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                  RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                  ItemsSource="{Binding Source={StaticResource departmentViewSource}}"
+                  CurrentCellChanged="DataGridCellChanged"
+                  MouseDown="DataGridMouseDown">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
+                <DataGridTextColumn Header="院系名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="院系类别" Width="Auto" Binding="{Binding DepartmentType}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="4" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+            <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartmentButton_Click"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartmentButton_Click"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Margin="5">
+            <Button x:Name="RevertAllButton" Content="↺" Click="RevertAllButton_Click"
+                Height="30" Width="40"/>
+            <Button x:Name="SaveChangesButton" Content="保存" Click="SaveChangesButton_Click"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="160" />
+        </StackPanel>
+        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5" BorderThickness="5" BorderBrush="Wheat" Margin="0,0,0,7">
+            <TextBlock x:Name="ErrorMsg" Text="" />
+        </Border>
+    </Grid>
 </Window>

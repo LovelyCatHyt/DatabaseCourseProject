@@ -42,12 +42,23 @@ namespace StudentManageSystem
         /// 学生视图表
         /// </summary>
         public CollectionViewSource studentViewSource;
+        /// <summary>
+        /// 班级视图表
+        /// </summary>
+        public CollectionViewSource classViewSource;
+        /// <summary>
+        /// 院系视图表
+        /// </summary>
+        public CollectionViewSource departmentViewSource;
 
         private bool _dataBaseDirty;
-        private StudentDbValidator _studentDbValidator;
+        private readonly StudentDbValidator _studentDbValidator;
         private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
 
+        private ObservableCollection<NaturalClass> _classDataSource;
+
+        private ObservableCollection<Department> _departmentDataSource;
 
         public MainWindow()
         {
@@ -64,6 +75,8 @@ namespace StudentManageSystem
             studentDataBase.Database.Migrate();
             studentDataBase.Students.Load();
             _studentDbValidator = new StudentDbValidator(studentDataBase);
+            studentDataBase.Classes.Load();
+            studentDataBase.Departments.Load();
 
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
@@ -71,10 +84,17 @@ namespace StudentManageSystem
             studentGender.ItemsSource = new[] { "男", "女" };
             var classIdsQueryable = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
             studentClass.ItemsSource = classIdsQueryable.ToArray();
+            classViewSource = (CollectionViewSource) FindResource(nameof(classViewSource));
+            departmentViewSource = (CollectionViewSource) FindResource(nameof(departmentViewSource));
+
 
             // 绑定数据源
             _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
             studentViewSource.Source = _studentDataSource;
+            _classDataSource = studentDataBase.Classes.Local.ToObservableCollection();
+            classViewSource.Source = _classDataSource;
+            _departmentDataSource = studentDataBase.Departments.Local.ToObservableCollection();
+            departmentViewSource.Source = _departmentDataSource;
 
         }
 
@@ -84,13 +104,9 @@ namespace StudentManageSystem
             studentDataBase.Dispose();
         }
 
-        private void studentsDataGrid_CurrentCellChanged(object sender, EventArgs e)
+        private void DataGridCellChanged(object sender, EventArgs e)
         {
-            // TODO: remove debug
-            var temp = DataBaseDirty;
             if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
-            if(temp != DataBaseDirty)
-                Debug.WriteLine("Detect change in CurrentCellChanged");
         }
 
         private int RollBack(DbContext ctx)
@@ -129,15 +145,11 @@ namespace StudentManageSystem
         {
             studentViewSource.Source = _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
             studentsDataGrid.ItemsSource = _studentDataSource;
+            classViewSource.Source = _classDataSource = studentDataBase.Classes.Local.ToObservableCollection();
+            classDataGrid.ItemsSource = _classDataSource;
+            departmentViewSource.Source = _departmentDataSource = studentDataBase.Departments.Local.ToObservableCollection();
+            departmentDataGrid.ItemsSource = _departmentDataSource;
             CheckDataValid();
-        }
-
-        private void studentsDataGrid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            var temp = DataBaseDirty;
-            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
-            if(temp!= DataBaseDirty)
-                Debug.WriteLine("Detect change in MouseDown");
         }
 
         private void RevertAllButton_Click(object sender, RoutedEventArgs e)
@@ -148,18 +160,23 @@ namespace StudentManageSystem
             RefreshDataGrid();
         }
 
+        private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
+        {
+            studentDataBase.SaveChanges();
+            DataBaseDirty = false;
+        }
+
+        private void DataGridMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+        }
+        
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
             _newStudentWindow ??= new NewStudentWindow(studentDataBase);
             _newStudentWindow.Closed += (_, _) => _newStudentWindow = new NewStudentWindow(studentDataBase);
             _newStudentWindow.Show();
             _newStudentWindow.Activate();
-        }
-
-        private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
-        {
-            studentDataBase.SaveChanges();
-            DataBaseDirty = false;
         }
 
         private void RemoveStudentButton_Click(object sender, RoutedEventArgs e)
@@ -184,6 +201,26 @@ namespace StudentManageSystem
             if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
             if (temp != DataBaseDirty)
                 Debug.WriteLine("Detect change in DatePicker_OnSelectedDateChanged");
+        }
+
+        private void AddClassButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
+
+        private void RemoveClassButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
+
+        private void AddDepartmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
+
+        private void RemoveDepartmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO
         }
     }
 }
