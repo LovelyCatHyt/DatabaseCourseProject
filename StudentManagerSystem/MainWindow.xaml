@@ -71,7 +71,7 @@
                   MouseDown="DataGridMouseDown">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}"></DataGridTextColumn>
-                <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
+                <DataGridComboBoxColumn x:Name="ClassDepartmentId" Header="院系号" Width="Auto" SelectedValueBinding="{Binding DepartmentId}"></DataGridComboBoxColumn>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">

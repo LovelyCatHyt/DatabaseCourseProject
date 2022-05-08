@@ -57,9 +57,14 @@ namespace StudentManageSystem
         private NewStudentWindow? _newStudentWindow;
 
         private ObservableCollection<NaturalClass> _classDataSource;
+        private NewClassWindow? _newClassWindow;
 
         private ObservableCollection<Department> _departmentDataSource;
+        private NewDepartmentWindow? _newDepartmentWindow;
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public MainWindow()
         {
             Debug.WriteLine("/---------------------------------/\n" +
@@ -85,6 +90,7 @@ namespace StudentManageSystem
             var classIdsQueryable = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
             studentClass.ItemsSource = classIdsQueryable.ToArray();
             classViewSource = (CollectionViewSource) FindResource(nameof(classViewSource));
+            ClassDepartmentId.ItemsSource = studentDataBase.Departments.Select(d => d.DepartmentId).ToArray();
             departmentViewSource = (CollectionViewSource) FindResource(nameof(departmentViewSource));
 
 
@@ -101,6 +107,8 @@ namespace StudentManageSystem
         protected override void OnClosing(CancelEventArgs e)
         {
             _newStudentWindow?.Close();
+            _newClassWindow?.Close();
+            _newDepartmentWindow?.Close();
             studentDataBase.Dispose();
         }
 
@@ -174,7 +182,7 @@ namespace StudentManageSystem
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
             _newStudentWindow ??= new NewStudentWindow(studentDataBase);
-            _newStudentWindow.Closed += (_, _) => _newStudentWindow = new NewStudentWindow(studentDataBase);
+            _newStudentWindow.Closed += (_, _) => _newStudentWindow = null;
             _newStudentWindow.Show();
             _newStudentWindow.Activate();
         }
@@ -205,7 +213,10 @@ namespace StudentManageSystem
 
         private void AddClassButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            _newClassWindow ??= new NewClassWindow(studentDataBase);
+            _newClassWindow.Closed += (_, _) => _newClassWindow = null;
+            _newClassWindow.Show();
+            _newClassWindow.Activate();
         }
 
         private void RemoveClassButton_Click(object sender, RoutedEventArgs e)
@@ -215,7 +226,10 @@ namespace StudentManageSystem
 
         private void AddDepartmentButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            _newDepartmentWindow ??= new NewDepartmentWindow(studentDataBase);
+            _newDepartmentWindow.Closed += (_, _) => _newDepartmentWindow = null;
+            _newDepartmentWindow.Show();
+            _newDepartmentWindow.Activate();
         }
 
         private void RemoveDepartmentButton_Click(object sender, RoutedEventArgs e)
