@@ -9,10 +9,10 @@ namespace StudentManageSystem.Entities
         /// <summary>
         /// 院系名称
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         /// <summary>
         /// 院系类别
         /// </summary>
-        public string DepartmentType { get; set; }
+        public string DepartmentType { get; set; } = "";
     }
 }

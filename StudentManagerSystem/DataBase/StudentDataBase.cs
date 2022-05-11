@@ -16,6 +16,7 @@ namespace StudentManageSystem.DataBase
         public DbSet<Student> Students { get; set; }
         public DbSet<NaturalClass> Classes { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Major> Majors { get; set; }
 
         public StudentDataBase()
         {
@@ -45,6 +46,8 @@ namespace StudentManageSystem.DataBase
                 .HasKey(c => c.ClassId);
             modelBuilder.Entity<Department>()
                 .HasKey(dep => dep.DepartmentId);
+            modelBuilder.Entity<Major>()
+                .HasKey(m => new { m.DepartmentId, m.MajorName });
 
             // 外键
             modelBuilder.Entity<NaturalClass>()
@@ -55,6 +58,19 @@ namespace StudentManageSystem.DataBase
                 .HasOne(c => c.Class)
                 .WithMany(c => c.Students)
                 .HasForeignKey(s => s.ClassId);
+            modelBuilder.Entity<Major>()
+                .HasOne<Department>()
+                .WithMany()
+                .HasForeignKey(m => m.DepartmentId);
+            modelBuilder.Entity<NaturalClass>()
+                .HasOne<Major>(c => c.Major)
+                .WithMany()
+                .HasForeignKey(c => new { c.DepartmentId, c.MajorName });
+
+            // 索引
+            modelBuilder.Entity<Department>()
+                .HasIndex(d => d.Name)
+                .IsUnique();
 
             // 种子数据, 但不包含直接的引用
             // 一个问题: 为啥 Id=0 会抛异常?
@@ -64,16 +80,24 @@ namespace StudentManageSystem.DataBase
                 DepartmentType = "工科",
                 Name = "自动化学院"
             };
+            var testMajor = new Major
+            {
+                DepartmentId = 1,
+                MajorName = "自动化与电气类"
+            };
             var testClass = new NaturalClass
             {
                 DepartmentId = testDepartment.DepartmentId,
                 // Department = testDepartment,
                 ClassId = 1,
+                MajorName = testMajor.MajorName
                 // Students = new List<Student>()
             };
-            
+
             modelBuilder.Entity<Department>()
                 .HasData(testDepartment);
+            modelBuilder.Entity<Major>()
+                .HasData(testMajor);
             modelBuilder.Entity<NaturalClass>()
                 .HasData(testClass);
             modelBuilder.Entity<Student>()

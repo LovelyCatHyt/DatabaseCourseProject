@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentManageSystem.DataBase;
 
 namespace StudentManageSystem.Migrations
 {
     [DbContext(typeof(StudentDataBase))]
-    partial class StudentDataBaseModelSnapshot : ModelSnapshot
+    [Migration("20220508143316_ModifyDepartProp")]
+    partial class ModifyDepartProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,26 +48,6 @@ namespace StudentManageSystem.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StudentManageSystem.Entities.Major", b =>
-                {
-                    b.Property<int>("DepartmentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("MajorName")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("DepartmentId", "MajorName");
-
-                    b.ToTable("Majors");
-
-                    b.HasData(
-                        new
-                        {
-                            DepartmentId = 1,
-                            MajorName = "自动化与电气类"
-                        });
-                });
-
             modelBuilder.Entity("StudentManageSystem.Entities.NaturalClass", b =>
                 {
                     b.Property<int>("ClassId")
@@ -75,13 +57,9 @@ namespace StudentManageSystem.Migrations
                     b.Property<int>("DepartmentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("MajorName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.HasKey("ClassId");
 
-                    b.HasIndex("DepartmentId", "MajorName");
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Classes");
 
@@ -89,8 +67,7 @@ namespace StudentManageSystem.Migrations
                         new
                         {
                             ClassId = 1,
-                            DepartmentId = 1,
-                            MajorName = "自动化与电气类"
+                            DepartmentId = 1
                         });
                 });
 
@@ -145,15 +122,6 @@ namespace StudentManageSystem.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StudentManageSystem.Entities.Major", b =>
-                {
-                    b.HasOne("StudentManageSystem.Entities.Department", null)
-                        .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("StudentManageSystem.Entities.NaturalClass", b =>
                 {
                     b.HasOne("StudentManageSystem.Entities.Department", "Department")
@@ -162,15 +130,7 @@ namespace StudentManageSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StudentManageSystem.Entities.Major", "Major")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId", "MajorName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Department");
-
-                    b.Navigation("Major");
                 });
 
             modelBuilder.Entity("StudentManageSystem.Entities.Student", b =>
