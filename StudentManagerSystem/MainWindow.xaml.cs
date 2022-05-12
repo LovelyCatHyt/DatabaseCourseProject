@@ -50,6 +50,10 @@ namespace StudentManageSystem
         /// 院系视图表
         /// </summary>
         public CollectionViewSource departmentViewSource;
+        /// <summary>
+        /// 专业视图表
+        /// </summary>
+        public CollectionViewSource majorViewSource;
 
         private bool _dataBaseDirty;
         private readonly StudentDbValidator _studentDbValidator;
@@ -61,6 +65,9 @@ namespace StudentManageSystem
 
         private ObservableCollection<Department> _departmentDataSource;
         private NewDepartmentWindow? _newDepartmentWindow;
+
+        private ObservableCollection<Major> _majorDataSource;
+        private NewMajorWindow? _newMajorWindow;
 
         /// <summary>
         /// 构造函数
@@ -82,25 +89,36 @@ namespace StudentManageSystem
             _studentDbValidator = new StudentDbValidator(studentDataBase);
             studentDataBase.Classes.Load();
             studentDataBase.Departments.Load();
+            studentDataBase.Majors.Load();
 
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
+            classViewSource = (CollectionViewSource) FindResource(nameof(classViewSource));
+            departmentViewSource = (CollectionViewSource) FindResource(nameof(departmentViewSource));
+            majorViewSource = (CollectionViewSource)FindResource(nameof(majorViewSource));
             DataBaseDirty = false;
             studentGender.ItemsSource = new[] { "男", "女" };
-            var classIdsQueryable = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
-            studentClass.ItemsSource = classIdsQueryable.ToArray();
-            classViewSource = (CollectionViewSource) FindResource(nameof(classViewSource));
-            ClassDepartmentId.ItemsSource = studentDataBase.Departments.Select(d => d.DepartmentId).ToArray();
-            departmentViewSource = (CollectionViewSource) FindResource(nameof(departmentViewSource));
+            studentClass.ItemsSource = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId).ToArray();
+            ClassDepartmentName.ItemsSource = studentDataBase.Departments.Select(d => d.Name).ToArray();
+            ClassMajorName.ItemsSource = studentDataBase.Majors.Select(m => m.MajorName).ToArray();
+            // MajorDepartmentName.ItemsSource = studentDataBase.Departments.Select(d => d.Name).ToArray();
+            // TODO: 逐行设置 ItemSource
+            // ClassMajorName.ItemsSource = ?
 
 
             // 绑定数据源
             _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
+            // InitVisitors(_studentDataSource);
             studentViewSource.Source = _studentDataSource;
             _classDataSource = studentDataBase.Classes.Local.ToObservableCollection();
+            InitVisitors(_classDataSource);
             classViewSource.Source = _classDataSource;
             _departmentDataSource = studentDataBase.Departments.Local.ToObservableCollection();
+            // InitVisitors(_departmentDataSource);
             departmentViewSource.Source = _departmentDataSource;
+            _majorDataSource = studentDataBase.Majors.Local.ToObservableCollection();
+            InitVisitors(_majorDataSource);
+            majorViewSource.Source = _majorDataSource;
 
         }
 
@@ -109,7 +127,16 @@ namespace StudentManageSystem
             _newStudentWindow?.Close();
             _newClassWindow?.Close();
             _newDepartmentWindow?.Close();
+            _newMajorWindow?.Close();
             studentDataBase.Dispose();
+        }
+
+        private void InitVisitors(IEnumerable<IDbVisitor> visitors)
+        {
+            foreach (var dbVisitor in visitors)
+            {
+                dbVisitor.Init(studentDataBase);
+            }
         }
 
         private void DataGridCellChanged(object sender, EventArgs e)
@@ -233,6 +260,19 @@ namespace StudentManageSystem
         }
 
         private void RemoveDepartmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
+
+        private void AddMajor_Click(object sender, RoutedEventArgs e)
+        {
+            _newMajorWindow ??= new NewMajorWindow(studentDataBase);
+            _newMajorWindow.Closed += (_, _) => _newMajorWindow = null;
+            _newMajorWindow.Show();
+            _newMajorWindow.Activate();
+        }
+
+        private void RemoveMajor_Click(object sender, RoutedEventArgs e)
         {
             // TODO
         }

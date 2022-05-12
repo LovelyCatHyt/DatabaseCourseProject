@@ -10,6 +10,7 @@
         <CollectionViewSource x:Key="studentViewSource"/>
         <CollectionViewSource x:Key="classViewSource"/>
         <CollectionViewSource x:Key="departmentViewSource"/>
+        <CollectionViewSource x:Key="majorViewSource"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -71,7 +72,8 @@
                   MouseDown="DataGridMouseDown">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}"></DataGridTextColumn>
-                <DataGridComboBoxColumn x:Name="ClassDepartmentId" Header="院系号" Width="Auto" SelectedValueBinding="{Binding DepartmentId}"></DataGridComboBoxColumn>
+                <DataGridComboBoxColumn x:Name="ClassDepartmentName" Header="院系" Width="Auto" SelectedValueBinding="{Binding DepartmentName}"></DataGridComboBoxColumn>
+                <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="Auto" SelectedValueBinding="{Binding MajorName}"></DataGridComboBoxColumn>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
@@ -81,26 +83,52 @@
                     HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
         <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center" Margin="0,0,0,32"></GridSplitter>
-        <!--院系表-->
-        <DataGrid x:Name="departmentDataGrid" Grid.Row="0" Grid.Column="4" Margin="5,5,5,5" AutoGenerateColumns="False"
-                  EnableRowVirtualization="False" EnableColumnVirtualization="False"
-                  RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
-                  ItemsSource="{Binding Source={StaticResource departmentViewSource}}"
-                  CurrentCellChanged="DataGridCellChanged"
-                  MouseDown="DataGridMouseDown">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
-                <DataGridTextColumn Header="院系名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
-                <DataGridTextColumn Header="院系类别" Width="Auto" Binding="{Binding DepartmentType}"></DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-        <StackPanel Grid.Column="4" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
-            <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartmentButton_Click"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-            <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartmentButton_Click"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-        </StackPanel>
-        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Margin="5">
+        <Grid Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <!--院系表-->
+            <DataGrid x:Name="departmentDataGrid" Grid.Row="0" Grid.Column="0" Margin="5,5,5,5" AutoGenerateColumns="False"
+                      EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                      RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                      ItemsSource="{Binding Source={StaticResource departmentViewSource}}"
+                      CurrentCellChanged="DataGridCellChanged"
+                      MouseDown="DataGridMouseDown">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="院系名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="院系类别" Width="Auto" Binding="{Binding DepartmentType}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+                <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartmentButton_Click"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+                <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartmentButton_Click"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            </StackPanel>
+            <!--专业表-->
+            <DataGrid x:Name="majorGrid" Grid.Row="2" Margin="5,5,5,5" AutoGenerateColumns="False"
+                      EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                      RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                      ItemsSource="{Binding Source={StaticResource majorViewSource}}"
+                      CurrentCellChanged="DataGridCellChanged"
+                      MouseDown="DataGridMouseDown">
+                <DataGrid.Columns>
+                    <DataGridTextColumn IsReadOnly="True" Header="院系" Width="Auto" Binding="{Binding DepartmentName}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="专业名字" Width="Auto" Binding="{Binding MajorName}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+                <Button x:Name="AddMajorButton" Content="+" Click="AddMajor_Click"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+                <Button x:Name="RemoveMajorButton" Content="-" Click="RemoveMajor_Click"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Margin="5" HorizontalAlignment="Center">
             <Button x:Name="RevertAllButton" Content="↺" Click="RevertAllButton_Click"
                 Height="30" Width="40"/>
             <Button x:Name="SaveChangesButton" Content="保存" Click="SaveChangesButton_Click"
