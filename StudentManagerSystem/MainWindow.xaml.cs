@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using StudentManageSystem.DataBase;
 using StudentManageSystem.Entities;
@@ -60,14 +58,18 @@ namespace StudentManageSystem
         private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
 
+        private readonly ClassDbValidator _classValidator; 
         private ObservableCollection<NaturalClass> _classDataSource;
         private NewClassWindow? _newClassWindow;
 
+        private readonly DepartmentDbValidator _departmentValidator;
         private ObservableCollection<Department> _departmentDataSource;
         private NewDepartmentWindow? _newDepartmentWindow;
 
+        private readonly MajorDbValidator _majorValidator;
         private ObservableCollection<Major> _majorDataSource;
         private NewMajorWindow? _newMajorWindow;
+        
 
         /// <summary>
         /// 构造函数
@@ -88,8 +90,11 @@ namespace StudentManageSystem
             studentDataBase.Students.Load();
             _studentDbValidator = new StudentDbValidator(studentDataBase);
             studentDataBase.Classes.Load();
+            _classValidator = new ClassDbValidator(studentDataBase);
             studentDataBase.Departments.Load();
+            _departmentValidator = new DepartmentDbValidator(studentDataBase);
             studentDataBase.Majors.Load();
+            _majorValidator = new MajorDbValidator(studentDataBase);
 
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
@@ -122,13 +127,47 @@ namespace StudentManageSystem
 
         }
 
+        /// <summary>
+        /// 关闭窗口
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosing(CancelEventArgs e)
+        {
+            if (DataBaseDirty)
+            {
+                switch (MessageBox.Show("数据变更未保存, 是否保存?", "未保存退出提示", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning))
+                {
+                    case MessageBoxResult.None:         // 直接关掉?
+                    case MessageBoxResult.Cancel:       // 取消等同于直接关掉
+                        e.Cancel = true;
+                        return;
+                    case MessageBoxResult.Yes:          // 保存并退出
+                        studentDataBase.SaveChanges();
+                        CloseAllWindow();
+                        studentDataBase.Dispose();
+                        return;
+                    case MessageBoxResult.No:           // 不保存退出
+                        CloseAllWindow();
+                        studentDataBase.Dispose();
+                        return;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+            }
+            else
+            {
+                CloseAllWindow();
+                studentDataBase.Dispose();
+            }
+        }
+
+        private void CloseAllWindow()
         {
             _newStudentWindow?.Close();
             _newClassWindow?.Close();
             _newDepartmentWindow?.Close();
             _newMajorWindow?.Close();
-            studentDataBase.Dispose();
         }
 
         private void InitVisitors(IEnumerable<IDbVisitor> visitors)
@@ -139,11 +178,8 @@ namespace StudentManageSystem
             }
         }
 
-        private void DataGridCellChanged(object sender, EventArgs e)
-        {
-            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
-        }
-
+        private void DataGridCellChanged(object sender, EventArgs e)=>DetectChange();
+        
         private int RollBack(DbContext ctx)
         {
             var reverted = 0;
@@ -171,11 +207,19 @@ namespace StudentManageSystem
 
         private bool CheckDataValid()
         {
-            var valid = _studentDbValidator.ValidateData(_studentDataSource, out var msg);
-            ErrorMsg.Text = valid ? "" : msg;
-            return valid;
+            var info = _studentDbValidator.ValidateRange(_studentDataSource);
+            info.AddOrConcat(_classValidator.ValidateRange(_classDataSource));
+            info.AddOrConcat(_majorValidator.ValidateRange(_majorDataSource));
+            info.AddOrConcat(_departmentValidator.ValidateRange(_departmentDataSource));
+            ErrorMsg.Text = info;
+            return info;
         }
 
+        private void DetectChange()
+        {
+            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+        }
+        
         private void RefreshDataGrid()
         {
             studentViewSource.Source = _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
@@ -201,10 +245,9 @@ namespace StudentManageSystem
             DataBaseDirty = false;
         }
 
-        private void DataGridMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
-        }
+        private void DataGridMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)=> DetectChange();
+        
+        private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)=> DetectChange();
         
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
@@ -216,28 +259,13 @@ namespace StudentManageSystem
 
         private void RemoveStudentButton_Click(object sender, RoutedEventArgs e)
         {
-            var students = studentsDataGrid.SelectedItems.OfType<Student>().ToArray();
-            foreach (var student in students)
+            foreach (var student in studentsDataGrid.SelectedItems.OfType<Student>().ToArray())
             {
                 _studentDataSource.Remove(student);
             }
+            DetectChange();
         }
-
-        private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            //if (e.RemovedItems.Count > 0 && e.AddedItems.Count > 0) Debug.WriteLine($"perv: {e.RemovedItems[0]}, new: {e.AddedItems[0]}");
-            //Debug.WriteLine($"Origin source: {e.OriginalSource}");
-            //var temp = (Visual?)sender;
-            //while (temp != null && temp is not DataGridRow) temp = VisualTreeHelper.GetParent(temp) as Visual;
-            //if (temp == null) return;
-            //var row = (DataGridRow) temp;
-            //row.DataContext
-            var temp = DataBaseDirty;
-            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
-            if (temp != DataBaseDirty)
-                Debug.WriteLine("Detect change in DatePicker_OnSelectedDateChanged");
-        }
-
+        
         private void AddClassButton_Click(object sender, RoutedEventArgs e)
         {
             _newClassWindow ??= new NewClassWindow(studentDataBase);
@@ -248,7 +276,11 @@ namespace StudentManageSystem
 
         private void RemoveClassButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            foreach (var naturalClass in classDataGrid.SelectedItems.OfType<NaturalClass>().ToArray())
+            {
+                _classDataSource.Remove(naturalClass);
+            }
+            DetectChange();
         }
 
         private void AddDepartmentButton_Click(object sender, RoutedEventArgs e)
@@ -261,7 +293,11 @@ namespace StudentManageSystem
 
         private void RemoveDepartmentButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            foreach (var department in departmentDataGrid.SelectedItems.OfType<Department>().ToArray())
+            {
+                _departmentDataSource.Remove(department);
+            }
+            DetectChange();
         }
 
         private void AddMajor_Click(object sender, RoutedEventArgs e)
@@ -274,7 +310,16 @@ namespace StudentManageSystem
 
         private void RemoveMajor_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            foreach (var major in majorGrid.SelectedItems.OfType<Major>().ToArray())
+            {
+                _majorDataSource.Remove(major);
+            }
+            DetectChange();
+        }
+
+        private void OpenQueryWindow(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }

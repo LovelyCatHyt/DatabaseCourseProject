@@ -21,9 +21,9 @@ namespace StudentManageSystem
     /// </summary>
     public partial class NewMajorWindow : Window
     {
-        private DbContext _context;
+        private readonly DbContext _context;
 
-        private Major _newMajor;
+        private readonly Major _newMajor;
 
         public NewMajorWindow(DbContext context)
         {

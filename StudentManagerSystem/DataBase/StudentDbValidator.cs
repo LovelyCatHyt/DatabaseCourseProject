@@ -2,56 +2,48 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using StudentManageSystem.Entities;
+using StudentManageSystem.Infos;
 
 namespace StudentManageSystem.DataBase
 {
-    public class StudentDbValidator
+    public class StudentDbValidator : DbValidator<Student>
     {
-        public readonly DbContext studentDataBase;
+        public StudentDbValidator(DbContext context) : base(context) { }
 
-        public StudentDbValidator(DbContext studentDataBase)
-        {
-            this.studentDataBase = studentDataBase;
-        }
-
-        public bool NameValidate(string? name)
+        public static bool NameValidate(string? name)
         {
             // 判空
             if (string.IsNullOrWhiteSpace(name)) return false;
-            // 特殊字符
-            var inValidChars = "!@#$%^&*()_+-=<>[]{};:?'\",./\\\n\r\t".ToCharArray();
-            if (inValidChars.Any(name.Contains)) return false;
-
-            return true;
+            // 正则   
+            return Regex.IsMatch(name, @"^[一-\uffff]+$");
         }
 
-        public bool ValidateData(Student student, out string msg)
+        public InfoGroup ValidateData(Student student, out string msg)
         {
-            var classSet = studentDataBase.Set<NaturalClass>();
-            msg = "";
-
+            var classSet = _context.Set<NaturalClass>();
+            var infoGroup = new InfoGroup();
+            
             // 外键约束
             if (!classSet.Any(c => c.ClassId == student.ClassId))
             {
-                msg = $"不存在班级号 {student.ClassId}!";
-                return false;
+                infoGroup.AddOrConcat(new Error(student, $"学生{student.Id}: 不存在班级号 {student.ClassId}!"));
             }
             // 普通属性合理性约束
             if (!NameValidate(student.Name))
             {
-                msg = $"姓名 \"{student.Name}\" 无效!";
-                return false;
+                infoGroup.AddOrConcat(new Info(student, $"学生{student.Id}: 姓名 \"{student.Name}\" 无效!"));
             }
             if (student.Birth < new DateTime(1904, 2, 11) || student.Birth > DateTime.Now)
             {
                 // 当前在世最老长者: 露西尔·朗东, 生于1904年2月11日 https://zh.wikipedia.org/zh-cn/%E6%9C%80%E9%95%B7%E5%A3%BD%E8%80%85
-                msg = $"出生日期 {student.Birth:D} 超出合理范围!";
-                return false;
+                infoGroup.AddOrConcat(new Info(student, $"学生{student.Id}: 出生日期 {student.Birth:D} 超出合理范围!"));
             }
 
-            return true;
+            msg = infoGroup;
+            return infoGroup;
         }
 
         /// <summary>
@@ -60,24 +52,50 @@ namespace StudentManageSystem.DataBase
         /// <param name="student">验证实体</param>
         /// <param name="msg">错误信息</param>
         /// <returns></returns>
-        public bool ValidateNewData(Student student, out string msg)
+        public InfoGroup ValidateNewData(Student student, out string msg)
         {
-            var studentSet = studentDataBase.Set<Student>();
-            msg = "";
+            var studentSet = _context.Set<Student>();
+            var infoGroup = new InfoGroup();
 
             // 主键约束
             if (studentSet.Any(s => s.Id == student.Id))
             {
-                msg = $"学号 {student.Id} 已被占用!";
-                return false;
+                infoGroup.AddOrConcat(new Error(student, $"学生{student.Id}: 学号 {student.Id} 已被占用!"));
             }
             // 其它约束
-            if (!ValidateData(student, out msg))
+            infoGroup.AddOrConcat(ValidateData(student, out _));
+
+            msg = infoGroup;
+            return infoGroup;
+        }
+
+        private InfoGroup ValidateEnumerable(IEnumerable<Student> students, out string msg, bool stopOnFirstInvalid, Func<Student, BaseInfo> elementValidator)
+        {
+            var infoGroup = new InfoGroup();
+            var idSet = new HashSet<string>();
+            foreach (var student in students)
             {
-                return false;
+                var info = elementValidator(student);
+                infoGroup.AddOrConcat(info);
+                BaseInfo? noDuplicate = null;
+                // 查重
+                if (idSet.Contains(student.Id))
+                {
+                    infoGroup.AddOrConcat(noDuplicate = new Error(student, $"学生{student.Id}: 学号 {student.Id} 已存在列表中"));
+                }
+                else
+                {
+                    idSet.Add(student.Id);
+                }
+                // 中断
+                if (!info || (noDuplicate != null && !noDuplicate))
+                {
+                    if (stopOnFirstInvalid) break;
+                }
             }
 
-            return true;
+            msg = infoGroup;
+            return infoGroup;
         }
 
         /// <summary>
@@ -87,40 +105,9 @@ namespace StudentManageSystem.DataBase
         /// <param name="msg">错误信息</param>
         /// <param name="stopOnFirstInvalid">检测到无效信息即停止</param>
         /// <returns></returns>
-        public bool ValidateNewData(IEnumerable<Student> students, out string msg, bool stopOnFirstInvalid = false)
+        public InfoGroup ValidateNewData(IEnumerable<Student> students, out string msg, bool stopOnFirstInvalid = false)
         {
-            var strBuilder = new StringBuilder();
-            bool allValid = true;
-            var count = 0;
-            var idSet = new HashSet<string>();
-            foreach (var student in students)
-            {
-                if (!ValidateNewData(student, out var m))
-                {
-                    strBuilder.AppendLine($"[{count}] 学号为{student.Id}的数据异常: {m}");
-                    allValid = false;
-                    if (stopOnFirstInvalid) break;
-                    count++;
-                }
-                else
-                {
-                    if (idSet.Contains(student.Id))
-                    {
-                        strBuilder.AppendLine($"[{count}] 学号为{student.Id}的数据异常: {student.Id} 已存在列表中");
-                        allValid = false;
-                        if (stopOnFirstInvalid) break;
-                        count++;
-                    }
-                    else
-                    {
-                        idSet.Add(student.Id);
-                    }
-                }
-                
-            }
-
-            msg = strBuilder.ToString();
-            return allValid;
+            return ValidateEnumerable(students, out msg, stopOnFirstInvalid, s => ValidateNewData(s, out _));
         }
 
         /// <summary>
@@ -130,40 +117,16 @@ namespace StudentManageSystem.DataBase
         /// <param name="msg"></param>
         /// <param name="stopOnFirstInvalid"></param>
         /// <returns></returns>
-        public bool ValidateData(IEnumerable<Student> students, out string msg, bool stopOnFirstInvalid = false)
+        public InfoGroup ValidateData(IEnumerable<Student> students, out string msg, bool stopOnFirstInvalid = false)
         {
-            var strBuilder = new StringBuilder();
-            bool allValid = true;
-            var count = 0;
-            var idSet = new HashSet<string>();
-            foreach (var student in students)
-            {
-                if (!ValidateData(student, out var m))
-                {
-                    strBuilder.AppendLine($"[{count}] 学号为{student.Id}的数据异常: {m}");
-                    allValid = false;
-                    if (stopOnFirstInvalid) break;
-                    count++;
-                }
-                else
-                {
-                    if (idSet.Contains(student.Id))
-                    {
-                        strBuilder.AppendLine($"[{count}] 学号为{student.Id}的数据异常: {student.Id} 已存在列表中");
-                        allValid = false;
-                        if (stopOnFirstInvalid) break;
-                        count++;
-                    }
-                    else
-                    {
-                        idSet.Add(student.Id);
-                    }
-                }
-
-            }
-
-            msg = strBuilder.ToString();
-            return allValid;
+            return ValidateEnumerable(students, out msg, stopOnFirstInvalid, s => ValidateData(s, out _));
         }
+
+
+        public override InfoGroup ValidateRange(IEnumerable<Student> dataEnumerable) 
+            => ValidateData(dataEnumerable, out _);
+
+        public override InfoGroup ValidateRangeNew(IEnumerable<Student> dataEnumerable)
+            => ValidateNewData(dataEnumerable, out _);
     }
 }
