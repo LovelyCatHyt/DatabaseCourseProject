@@ -13,18 +13,21 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" Margin="2.5">
-            <StackPanel Orientation="Horizontal">
-                <Label Width="100">班级编号</Label>
-                <TextBox x:Name="ClassIdTxt" Width="200" Text="{Binding ClassId}" IsEnabled="False"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Width="100">院系</Label>
-                <ComboBox x:Name="ClassDepartmentIdCbBox" Width="200" SelectedValue="{Binding DepartmentId, Mode=TwoWay}"/>
-            </StackPanel>
-        </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+        <Label Width="100">班级编号</Label>
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="ClassIdTxt" Width="200" Text="{Binding ClassId}" IsEnabled="False"/>
+        <Label Grid.Row="1" Grid.Column="0" Width="100">院系</Label>
+        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="ClassDepartmentNameCbBox" Width="200" SelectedValue="{Binding DepartmentName, Mode=TwoWay}" SelectionChanged="DepartmentChanged"/>
+        <Label Grid.Row="2" Grid.Column="0" Width="100">专业</Label>
+        <ComboBox Grid.Row="2" Grid.Column="1" Width="200" x:Name="ClassMajorNameCbBox"
+                  SelectedValue="{Binding MajorName, Mode=TwoWay}" ItemsSource="{Binding MajorNames}" />
+        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
             <Button Content="确定" Click="Confirm" Height="Auto"></Button>
             <Button Content="取消" Click="Cancel" Height="Auto"></Button>
         </StackPanel>

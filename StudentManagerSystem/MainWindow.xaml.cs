@@ -58,7 +58,7 @@ namespace StudentManageSystem
         private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
 
-        private readonly ClassDbValidator _classValidator; 
+        private readonly ClassDbValidator _classValidator;
         private ObservableCollection<NaturalClass> _classDataSource;
         private NewClassWindow? _newClassWindow;
 
@@ -69,7 +69,8 @@ namespace StudentManageSystem
         private readonly MajorDbValidator _majorValidator;
         private ObservableCollection<Major> _majorDataSource;
         private NewMajorWindow? _newMajorWindow;
-        
+
+        private IQueryable<Student>? _lastQuery;
 
         /// <summary>
         /// 构造函数
@@ -98,18 +99,19 @@ namespace StudentManageSystem
 
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
-            classViewSource = (CollectionViewSource) FindResource(nameof(classViewSource));
-            departmentViewSource = (CollectionViewSource) FindResource(nameof(departmentViewSource));
+            classViewSource = (CollectionViewSource)FindResource(nameof(classViewSource));
+            departmentViewSource = (CollectionViewSource)FindResource(nameof(departmentViewSource));
             majorViewSource = (CollectionViewSource)FindResource(nameof(majorViewSource));
             DataBaseDirty = false;
             studentGender.ItemsSource = new[] { "男", "女" };
-            studentClass.ItemsSource = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId).ToArray();
-            ClassDepartmentName.ItemsSource = studentDataBase.Departments.Select(d => d.Name).ToArray();
-            ClassMajorName.ItemsSource = studentDataBase.Majors.Select(m => m.MajorName).ToArray();
-            // MajorDepartmentName.ItemsSource = studentDataBase.Departments.Select(d => d.Name).ToArray();
-            // TODO: 逐行设置 ItemSource
-            // ClassMajorName.ItemsSource = ?
-
+            SqlViewer.OnSqlUpdated += () => sqlList.ItemsSource = SqlViewer.SqlStatements;
+            var intQueryable = studentDataBase.Set<NaturalClass>().Select(x => x.ClassId);
+            SqlViewer.Add(intQueryable);
+            studentClass.ItemsSource = intQueryable.ToArray();
+            var strQueryable = studentDataBase.Departments.Select(d => d.Name);
+            SqlViewer.Add(strQueryable);
+            classDepartmentName.ItemsSource = strQueryable.ToArray();
+            queryGrid.Visibility = Visibility.Collapsed;
 
             // 绑定数据源
             _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
@@ -178,8 +180,8 @@ namespace StudentManageSystem
             }
         }
 
-        private void DataGridCellChanged(object sender, EventArgs e)=>DetectChange();
-        
+        private void DataGridCellChanged(object sender, EventArgs e) => DetectChange();
+
         private int RollBack(DbContext ctx)
         {
             var reverted = 0;
@@ -217,9 +219,19 @@ namespace StudentManageSystem
 
         private void DetectChange()
         {
-            if (studentDataBase.ChangeTracker.HasChanges()) DataBaseDirty = true;
+            if (studentDataBase.ChangeTracker.HasChanges())
+            {
+                DataBaseDirty = true;
+                //// var departmentColumn = classDataGrid.Columns.First(c => (string) c.Header == "院系");
+                //var majorColumn = classDataGrid.Columns.First(c => (string) c.Header == "专业") as DataGridComboBoxColumn;
+                //for (var index = 0; index < _classDataSource.Count; index++)
+                //{
+                //    var cls = _classDataSource[index];
+
+                //}
+            }
         }
-        
+
         private void RefreshDataGrid()
         {
             studentViewSource.Source = _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
@@ -245,10 +257,10 @@ namespace StudentManageSystem
             DataBaseDirty = false;
         }
 
-        private void DataGridMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)=> DetectChange();
-        
-        private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)=> DetectChange();
-        
+        private void DataGridMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) => DetectChange();
+
+        private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e) => DetectChange();
+
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
             _newStudentWindow ??= new NewStudentWindow(studentDataBase);
@@ -265,10 +277,10 @@ namespace StudentManageSystem
             }
             DetectChange();
         }
-        
+
         private void AddClassButton_Click(object sender, RoutedEventArgs e)
         {
-            _newClassWindow ??= new NewClassWindow(studentDataBase);
+            _newClassWindow ??= new NewClassWindow(studentDataBase, _studentDataSource.Max(c => c.ClassId) + 1);
             _newClassWindow.Closed += (_, _) => _newClassWindow = null;
             _newClassWindow.Show();
             _newClassWindow.Activate();
@@ -317,9 +329,41 @@ namespace StudentManageSystem
             DetectChange();
         }
 
-        private void OpenQueryWindow(object sender, RoutedEventArgs e)
+        private void ToggleQuery(object sender, RoutedEventArgs e)
         {
-            
+            queryGrid.Visibility = queryGrid.Visibility switch
+            {
+                Visibility.Visible => Visibility.Collapsed,
+                Visibility.Hidden => Visibility.Visible,
+                Visibility.Collapsed => Visibility.Visible,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private void RunQuery(object sender, RoutedEventArgs e)
+        {
+            // TODO: Query from _lastQuery
+            _lastQuery = studentDataBase.Students.AsQueryable();
+            SqlViewer.Remove(_lastQuery);
+            if (studentNameChkBox.IsChecked ?? false)
+            {
+                _lastQuery = _lastQuery.Where(s => s.Name.Contains(studentNameQueryTxt.Text.Trim()));
+            }
+            if (studentIdChkBox.IsChecked ?? false)
+            {
+                _lastQuery = _lastQuery.Where(s => s.Id.Contains(studentIdQueryTxt.Text.Trim()));
+            }
+            if (studentMajorChkBox.IsChecked ?? false)
+            {
+                _lastQuery = _lastQuery.Where(s => s.Class.MajorName.Contains(studentMajorQueryTxt.Text.Trim()));
+            }
+            if (studentDepartmentChkBox.IsChecked ?? false)
+            {
+                _lastQuery = _lastQuery.Where(s =>
+                    s.Class.Department!.Name.Contains(studentDepartmentQueryTxt.Text.Trim()));
+            }
+            SqlViewer.Add(_lastQuery);
+            studentQueryResult.ItemsSource = _lastQuery.ToArray();
         }
     }
 }

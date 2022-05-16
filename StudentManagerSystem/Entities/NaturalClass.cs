@@ -55,6 +55,9 @@ namespace StudentManageSystem.Entities
         /// <para>外键</para>
         /// </summary>
         public string MajorName { get; set; } = "";
+        [NotMapped]
+        public string[] MajorNames => _context.Set<Major>().Where(m => m.DepartmentId == DepartmentId)
+            .Select(m => m.MajorName).ToArray();
         /// <summary>
         /// 专业
         /// <para>导航属性</para>

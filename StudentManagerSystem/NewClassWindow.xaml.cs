@@ -13,18 +13,23 @@ namespace StudentManageSystem
         private readonly NaturalClass _newClass;
         private readonly DbContext _dbContext;
 
-        public NewClassWindow(DbContext dbContext)
+        public NewClassWindow(DbContext dbContext, int newClassId)
         {
             InitializeComponent();
             _dbContext = dbContext;
             _newClass = new NaturalClass
             {
-                ClassId = dbContext.Set<NaturalClass>().Max(c => c.ClassId) + 1,
+                ClassId = newClassId,
                 DepartmentId = dbContext.Set<Department>().First().DepartmentId
             };
+            _newClass.Init(dbContext);
             DataContext = _newClass;
-            ClassDepartmentIdCbBox.ItemsSource = dbContext.Set<Department>().Select(d => d.DepartmentId).ToArray();
-            ClassDepartmentIdCbBox.Focus();
+            ClassDepartmentNameCbBox.ItemsSource = dbContext.Set<Department>().Select(d => d.Name).ToArray();
+            ClassDepartmentNameCbBox.Focus();
+            ClassDepartmentNameCbBox.SelectedValue = ClassDepartmentNameCbBox.ItemsSource.OfType<object>().First();
+
+            ClassMajorNameCbBox.ItemsSource = _newClass.MajorNames;
+            ClassMajorNameCbBox.SelectedValue = ClassMajorNameCbBox.ItemsSource.OfType<object>().First();
         }
 
         private void Confirm(object sender, RoutedEventArgs e)
@@ -36,6 +41,13 @@ namespace StudentManageSystem
         private void Cancel(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void DepartmentChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var names = _newClass.MajorNames;
+            ClassMajorNameCbBox.ItemsSource = names;
+            ClassMajorNameCbBox.SelectedValue = names[0];
         }
     }
 }

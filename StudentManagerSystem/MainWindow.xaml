@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StudentManageSystem"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000" HorizontalContentAlignment="Left">
+        Title="MainWindow" Height="600" Width="1200" HorizontalContentAlignment="Left">
     <Window.Resources>
         <CollectionViewSource x:Key="studentViewSource"/>
         <CollectionViewSource x:Key="classViewSource"/>
@@ -18,13 +18,13 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*"/>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
         <!--学生表-->
         <DataGrid x:Name="studentsDataGrid" AutoGenerateColumns="False" 
@@ -34,7 +34,8 @@
                   ItemsSource="{Binding Source={StaticResource studentViewSource}}" 
                   Margin="5,5,5,5"
                   RowDetailsVisibilityMode="VisibleWhenSelected"
-                  CanUserAddRows="False" CurrentCellChanged="DataGridCellChanged" MouseDown="DataGridMouseDown">
+                  CanUserAddRows="False" CurrentCellChanged="DataGridCellChanged" MouseDown="DataGridMouseDown"
+                  SelectedItem="{Binding ElementName=studentQueryResult, Path=SelectedItem, Mode=OneWay}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Id, UpdateSourceTrigger=PropertyChanged}" Header="学号" 
                                     Width="Auto"
@@ -61,10 +62,10 @@
             <Button x:Name="RemoveStudentButton" Content="-" Click="RemoveStudentButton_Click"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
-        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center"></GridSplitter>
-        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center"></GridSplitter>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                      ResizeDirection="Columns" ResizeBehavior="CurrentAndNext" Width="5" HorizontalAlignment="Right" />
         <!--班级表-->
-        <DataGrid x:Name="classDataGrid" Grid.Row="0" Grid.Column="2" Margin="5,5,5,5" AutoGenerateColumns="False"
+        <DataGrid x:Name="classDataGrid" Grid.Row="0" Grid.Column="1" Margin="0,5,5,5" AutoGenerateColumns="False"
                   EnableRowVirtualization="False" EnableColumnVirtualization="False"
                   RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
                   ItemsSource="{Binding Source={StaticResource classViewSource}}"
@@ -72,18 +73,30 @@
                   MouseDown="DataGridMouseDown">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}"></DataGridTextColumn>
-                <DataGridComboBoxColumn x:Name="ClassDepartmentName" Header="院系" Width="Auto" SelectedValueBinding="{Binding DepartmentName}"></DataGridComboBoxColumn>
-                <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="Auto" SelectedValueBinding="{Binding MajorName}"></DataGridComboBoxColumn>
+                <DataGridComboBoxColumn x:Name="classDepartmentName" Header="院系" Width="Auto" SelectedValueBinding="{Binding DepartmentName}" />
+                <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="Auto" SelectedValueBinding="{Binding MajorName}">
+                    <DataGridComboBoxColumn.ElementStyle>
+                        <Style TargetType="ComboBox">
+                            <Setter Property="ItemsSource" Value="{Binding MajorNames}"/>
+                        </Style>
+                    </DataGridComboBoxColumn.ElementStyle>
+                    <DataGridComboBoxColumn.EditingElementStyle>
+                        <Style TargetType="ComboBox">
+                            <Setter Property="ItemsSource" Value="{Binding MajorNames}"/>
+                        </Style>
+                    </DataGridComboBoxColumn.EditingElementStyle>
+                </DataGridComboBoxColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
             <Button x:Name="AddClassButton" Content="+" Click="AddClassButton_Click"
                     HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
             <Button x:Name="RemoveClassButton" Content="-" Click="RemoveClassButton_Click"
                     HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
-        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Width="5" HorizontalAlignment="Center" Margin="0,0,0,32"></GridSplitter>
-        <Grid Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
+        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                      ResizeDirection="Columns" ResizeBehavior="CurrentAndNext" Width="5" HorizontalAlignment="Right"/>
+        <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="5*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
@@ -91,7 +104,7 @@
                 <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
             <!--院系表-->
-            <DataGrid x:Name="departmentDataGrid" Grid.Row="0" Grid.Column="0" Margin="5,5,5,5" AutoGenerateColumns="False"
+            <DataGrid x:Name="departmentDataGrid" Grid.Row="0" Grid.Column="0" Margin="0,5" AutoGenerateColumns="False"
                       EnableRowVirtualization="False" EnableColumnVirtualization="False"
                       RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
                       ItemsSource="{Binding Source={StaticResource departmentViewSource}}"
@@ -103,7 +116,7 @@
                     <DataGridTextColumn Header="院系类别" Width="Auto" Binding="{Binding DepartmentType}"></DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
-            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 5">
                 <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartmentButton_Click"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
                 <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartmentButton_Click"
@@ -113,7 +126,7 @@
                           Height="5" VerticalAlignment="Bottom"
                           HorizontalAlignment="Stretch"/>
             <!--专业表-->
-            <DataGrid x:Name="majorGrid" Grid.Row="2" Margin="5,5,5,5" AutoGenerateColumns="False"
+            <DataGrid x:Name="majorGrid" Grid.Row="2" Margin="0,5" AutoGenerateColumns="False"
                       EnableRowVirtualization="False" EnableColumnVirtualization="False"
                       RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
                       ItemsSource="{Binding Source={StaticResource majorViewSource}}"
@@ -125,25 +138,56 @@
                     <DataGridTextColumn IsReadOnly="True" Header="专业名字" Width="Auto" Binding="{Binding MajorName}"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,5,5,5">
                 <Button x:Name="AddMajorButton" Content="+" Click="AddMajor_Click"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
                 <Button x:Name="RemoveMajorButton" Content="-" Click="RemoveMajor_Click"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
             </StackPanel>
         </Grid>
-        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" BorderBrush="Gray" BorderThickness="2">
+        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="2">
             <StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Center">
                 <Button x:Name="RevertAllButton" Content="重置↺" Click="RevertAllButton_Click"
                         Height="30" Width="40"/>
                 <Button x:Name="SaveChangesButton" Content="保存💾" Click="SaveChangesButton_Click"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Width="160" Height="30"/>
-                <Button Content="查询🔍" Click="OpenQueryWindow"
+                <Button Content="查询🔍" Click="ToggleQuery"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Width="40" Height="30"></Button>
             </StackPanel>
         </Border>
-        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5" BorderThickness="5" BorderBrush="Wheat" Margin="0,0,0,7">
+        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="5" BorderBrush="Wheat">
             <TextBlock x:Name="ErrorMsg" Text="" />
         </Border>
+        <Grid x:Name="queryGrid" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel  Orientation="Horizontal" 
+                         Width="Auto" Height="Auto" Margin="5" VerticalAlignment="Center">
+                <CheckBox x:Name="studentNameChkBox" Content="姓名" Margin="5,3,1.5,3" VerticalAlignment="Center"/>
+                <TextBox x:Name="studentNameQueryTxt" Width="100" VerticalAlignment="Center" IsEnabled="{Binding ElementName=studentNameChkBox, Path=IsChecked}"/>
+                <CheckBox x:Name="studentIdChkBox" Content="学号" Margin="5,3,1.5,3" VerticalAlignment="Center"/>
+                <TextBox x:Name="studentIdQueryTxt" Width="120" VerticalAlignment="Center" IsEnabled="{Binding ElementName=studentIdChkBox, Path=IsChecked}"/>
+                <CheckBox x:Name="studentMajorChkBox" Content="专业" Margin="5,3,1.5,3" VerticalAlignment="Center"/>
+                <TextBox x:Name="studentMajorQueryTxt" Width="120" VerticalAlignment="Center" IsEnabled="{Binding ElementName=studentMajorChkBox, Path=IsChecked}"/>
+                <CheckBox x:Name="studentDepartmentChkBox" Content="院系" Margin="5,3,1.5,3" VerticalAlignment="Center"/>
+                <TextBox x:Name="studentDepartmentQueryTxt" Width="120" VerticalAlignment="Center" IsEnabled="{Binding ElementName=studentDepartmentChkBox, Path=IsChecked}"/>
+                <Button Click="RunQuery" Content="查询"/>
+            </StackPanel>
+            <DataGrid Grid.Row="1" x:Name="studentQueryResult" AutoGenerateColumns="False" Margin="5">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Id, UpdateSourceTrigger=PropertyChanged}" Header="学号" IsReadOnly="True"
+                                        Width="Auto"/>
+                    <DataGridTextColumn Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="姓名" IsReadOnly="True"
+                                        Width="Auto"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"
+                      ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent" Width="5" HorizontalAlignment="Left"/>
+        <GroupBox Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" Margin="5,5" Width="Auto" Header="Sql语句">
+            <ListBox x:Name="sqlList"/>
+        </GroupBox>
     </Grid>
 </Window>
