@@ -31,7 +31,7 @@ namespace StudentManageSystem
             SqlUpdated();
         }
 
-        public static void Clear(string sql)
+        public static void Clear()
         {
             _sqlSet.Clear();
             SqlUpdated();

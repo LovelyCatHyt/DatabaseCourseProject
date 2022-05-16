@@ -264,7 +264,11 @@ namespace StudentManageSystem
         private void AddStudentButton_Click(object sender, RoutedEventArgs e)
         {
             _newStudentWindow ??= new NewStudentWindow(studentDataBase);
-            _newStudentWindow.Closed += (_, _) => _newStudentWindow = null;
+            _newStudentWindow.Closed += (_, _) =>
+            {
+                DetectChange();
+                _newStudentWindow = null;
+            };
             _newStudentWindow.Show();
             _newStudentWindow.Activate();
         }
@@ -280,8 +284,12 @@ namespace StudentManageSystem
 
         private void AddClassButton_Click(object sender, RoutedEventArgs e)
         {
-            _newClassWindow ??= new NewClassWindow(studentDataBase, _studentDataSource.Max(c => c.ClassId) + 1);
-            _newClassWindow.Closed += (_, _) => _newClassWindow = null;
+            _newClassWindow ??= new NewClassWindow(studentDataBase, _classDataSource.Max(c => c.ClassId) + 1);
+            _newClassWindow.Closed += (_, _) =>
+            {
+                _newClassWindow = null;
+                DetectChange();
+            };
             _newClassWindow.Show();
             _newClassWindow.Activate();
         }
@@ -298,7 +306,11 @@ namespace StudentManageSystem
         private void AddDepartmentButton_Click(object sender, RoutedEventArgs e)
         {
             _newDepartmentWindow ??= new NewDepartmentWindow(studentDataBase);
-            _newDepartmentWindow.Closed += (_, _) => _newDepartmentWindow = null;
+            _newDepartmentWindow.Closed += (_, _) =>
+            {
+                DetectChange();
+                _newDepartmentWindow = null;
+            };
             _newDepartmentWindow.Show();
             _newDepartmentWindow.Activate();
         }
@@ -315,7 +327,11 @@ namespace StudentManageSystem
         private void AddMajor_Click(object sender, RoutedEventArgs e)
         {
             _newMajorWindow ??= new NewMajorWindow(studentDataBase);
-            _newMajorWindow.Closed += (_, _) => _newMajorWindow = null;
+            _newMajorWindow.Closed += (_, _) =>
+            {
+                DetectChange();
+                _newMajorWindow = null;
+            };
             _newMajorWindow.Show();
             _newMajorWindow.Activate();
         }
@@ -364,6 +380,11 @@ namespace StudentManageSystem
             }
             SqlViewer.Add(_lastQuery);
             studentQueryResult.ItemsSource = _lastQuery.ToArray();
+        }
+
+        private void ClearSqlViewer(object sender, RoutedEventArgs e)
+        {
+            SqlViewer.Clear();
         }
     }
 }

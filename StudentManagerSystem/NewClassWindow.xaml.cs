@@ -24,9 +24,10 @@ namespace StudentManageSystem
             };
             _newClass.Init(dbContext);
             DataContext = _newClass;
-            ClassDepartmentNameCbBox.ItemsSource = dbContext.Set<Department>().Select(d => d.Name).ToArray();
+            var departmentNames = dbContext.Set<Department>().Select(d => d.Name).ToArray();
+            ClassDepartmentNameCbBox.ItemsSource = departmentNames;
             ClassDepartmentNameCbBox.Focus();
-            ClassDepartmentNameCbBox.SelectedValue = ClassDepartmentNameCbBox.ItemsSource.OfType<object>().First();
+            ClassDepartmentNameCbBox.SelectedValue = departmentNames[0];
 
             ClassMajorNameCbBox.ItemsSource = _newClass.MajorNames;
             ClassMajorNameCbBox.SelectedValue = ClassMajorNameCbBox.ItemsSource.OfType<object>().First();

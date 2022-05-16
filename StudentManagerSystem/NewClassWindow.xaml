@@ -20,12 +20,13 @@
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
-        <Label Width="100">班级编号</Label>
-        <TextBox Grid.Row="0" Grid.Column="1" x:Name="ClassIdTxt" Width="200" Text="{Binding ClassId}" IsEnabled="False"/>
-        <Label Grid.Row="1" Grid.Column="0" Width="100">院系</Label>
-        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="ClassDepartmentNameCbBox" Width="200" SelectedValue="{Binding DepartmentName, Mode=TwoWay}" SelectionChanged="DepartmentChanged"/>
-        <Label Grid.Row="2" Grid.Column="0" Width="100">专业</Label>
-        <ComboBox Grid.Row="2" Grid.Column="1" Width="200" x:Name="ClassMajorNameCbBox"
+        <Label>班级编号</Label>
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="ClassIdTxt" Text="{Binding ClassId}" IsEnabled="False"/>
+        <Label Grid.Row="1" Grid.Column="0">院系</Label>
+        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="ClassDepartmentNameCbBox"
+                  SelectedValue="{Binding DepartmentName, Mode=TwoWay}" SelectionChanged="DepartmentChanged"/>
+        <Label Grid.Row="2" Grid.Column="0">专业</Label>
+        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="ClassMajorNameCbBox"
                   SelectedValue="{Binding MajorName, Mode=TwoWay}" ItemsSource="{Binding MajorNames}" />
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
             <Button Content="确定" Click="Confirm" Height="Auto"></Button>

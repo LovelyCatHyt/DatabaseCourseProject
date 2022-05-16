@@ -72,7 +72,7 @@
                   CurrentCellChanged="DataGridCellChanged"
                   MouseDown="DataGridMouseDown">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}"></DataGridTextColumn>
+                <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}" IsReadOnly="True"/>
                 <DataGridComboBoxColumn x:Name="classDepartmentName" Header="院系" Width="Auto" SelectedValueBinding="{Binding DepartmentName}" />
                 <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="Auto" SelectedValueBinding="{Binding MajorName}">
                     <DataGridComboBoxColumn.ElementStyle>
@@ -189,5 +189,10 @@
         <GroupBox Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" Margin="5,5" Width="Auto" Header="Sql语句">
             <ListBox x:Name="sqlList"/>
         </GroupBox>
+        <Button Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" 
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Width="Auto" Height="Auto" Margin="11"
+                Click="ClearSqlViewer"
+                >🗑️</Button>
     </Grid>
 </Window>
