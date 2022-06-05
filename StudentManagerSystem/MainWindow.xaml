@@ -187,8 +187,8 @@
                       MouseDown="DataGridMouseDown">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="选课编号" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"></DataGridTextColumn>
-                    <DataGridTextColumn Header="学号" Width="Auto" Binding="{Binding StudentId}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="课程名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="学号" Width="Auto" Binding="{Binding StudentId}" IsReadOnly="True"></DataGridTextColumn>
+                    <DataGridTextColumn Header="课程号" Width="Auto" Binding="{Binding CourseId}"></DataGridTextColumn>
 
                 </DataGrid.Columns>
             </DataGrid>

@@ -407,12 +407,28 @@ namespace StudentManageSystem
 
         private void AddCourseSelection(object sender, RoutedEventArgs e)
         {
+            if (studentsDataGrid.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("请先选择一个学生再选课!", "学生管理系统-信息不足提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
+            var newId = _courseSelectionDataSource.Any()? _courseSelectionDataSource.Max(cs => cs.Id) + 1 : 1;
+            var selectedStudent = studentsDataGrid.SelectedItems[0] as Student;
+            var newCourseSelection = new CourseSelection
+            {
+                Course = null!, CourseId = 0, Id = newId, Student = selectedStudent!, StudentId = selectedStudent!.Id
+            };
+            _courseSelectionDataSource.Add(newCourseSelection);
         }
 
         private void RemoveCourseSelection(object sender, RoutedEventArgs e)
         {
-
+            foreach (var courseSelection in courseSelectionGrid.SelectedItems.OfType<CourseSelection>().ToArray())
+            {
+                _courseSelectionDataSource.Remove(courseSelection);
+            }
+            DetectChange();
         }
 
         private void ToggleQuery(object sender, RoutedEventArgs e)
