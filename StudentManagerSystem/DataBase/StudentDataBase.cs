@@ -17,6 +17,8 @@ namespace StudentManageSystem.DataBase
         public DbSet<NaturalClass> Classes { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Major> Majors { get; set; }
+        public DbSet<Course> Courses { get; set; }
+        public DbSet<CourseSelection> Selections { get; set; }
 
         public StudentDataBase()
         {
@@ -48,6 +50,10 @@ namespace StudentManageSystem.DataBase
                 .HasKey(dep => dep.DepartmentId);
             modelBuilder.Entity<Major>()
                 .HasKey(m => new { m.DepartmentId, m.MajorName });
+            modelBuilder.Entity<Course>()
+                .HasKey(c => c.Id);
+            modelBuilder.Entity<CourseSelection>()
+                .HasKey(cs => cs.Id);
 
             // 外键
             modelBuilder.Entity<NaturalClass>()
@@ -66,6 +72,14 @@ namespace StudentManageSystem.DataBase
                 .HasOne<Major>(c => c.Major)
                 .WithMany()
                 .HasForeignKey(c => new { c.DepartmentId, c.MajorName });
+            modelBuilder.Entity<CourseSelection>()
+                .HasOne(c=>c.Student)
+                .WithMany()
+                .HasForeignKey(cs => cs.StudentId);
+            modelBuilder.Entity<CourseSelection>()
+                .HasOne(cs => cs.Course)
+                .WithMany()
+                .HasForeignKey(cs => cs.CourseId);
 
             // 索引
             modelBuilder.Entity<Department>()

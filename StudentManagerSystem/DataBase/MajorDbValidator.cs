@@ -9,7 +9,7 @@ using StudentManageSystem.Infos;
 
 namespace StudentManageSystem.DataBase
 {
-    public class MajorDbValidator : DbValidator<Major>
+    public class MajorDbValidator : DbValidator<Major, string, string>
     {
         private readonly DbSet<Major> _majors;
 
@@ -18,7 +18,14 @@ namespace StudentManageSystem.DataBase
             _majors = context.Set<Major>();
         }
 
-        public InfoGroup ValidateData(Major m)
+        public override string IdOfEntity(Major entity) => $"{entity.DepartmentId}:{entity.MajorName}";
+
+        public override string NameOfEntity(Major entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override InfoGroup ValidateData(Major m)
         {
             var info = new InfoGroup();
 
@@ -32,7 +39,7 @@ namespace StudentManageSystem.DataBase
             return info;
         }
 
-        public InfoGroup ValidateNewData(Major major)
+        protected override InfoGroup ValidateNewData(Major major, string format)
         {
             var info = new InfoGroup();
 
@@ -45,14 +52,7 @@ namespace StudentManageSystem.DataBase
 
             return info;
         }
-
-        public override InfoGroup ValidateRange(IEnumerable<Major> dataEnumerable) =>
-            dataEnumerable.Aggregate(new InfoGroup(), (i, m) =>
-            {
-                i.AddOrConcat(ValidateData(m));
-                return i;
-            });
-
+        
         public override InfoGroup ValidateRangeNew(IEnumerable<Major> dataEnumerable)
         {
             var set = new HashSet<(int, string)>();
@@ -69,7 +69,7 @@ namespace StudentManageSystem.DataBase
                     set.Add(temp);
                 }
 
-                info.AddOrConcat(ValidateNewData(major));
+                info.AddOrConcat(ValidateNewData(major,""));
             }
 
             return info;

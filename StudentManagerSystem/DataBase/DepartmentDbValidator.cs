@@ -9,13 +9,17 @@ using StudentManageSystem.Infos;
 
 namespace StudentManageSystem.DataBase
 {
-    public class DepartmentDbValidator: DbValidator<Department>
+    public class DepartmentDbValidator: DbValidator<Department, int, string>
     {
         private readonly DbSet<Department> _departments;
 
         public DepartmentDbValidator(DbContext context) : base(context) => _departments = context.Set<Department>();
 
-        public InfoGroup ValidateData(Department department)
+        public override int IdOfEntity(Department entity) => entity.DepartmentId;
+
+        public override string NameOfEntity(Department entity) => entity.Name;
+
+        public override InfoGroup ValidateData(Department department)
         {
             var info = new InfoGroup();
 

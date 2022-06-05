@@ -52,6 +52,14 @@ namespace StudentManageSystem
         /// 专业视图表
         /// </summary>
         public CollectionViewSource majorViewSource;
+        /// <summary>
+        /// 课程视图表
+        /// </summary>
+        public CollectionViewSource courseViewSource;
+        /// <summary>
+        /// 选课视图表
+        /// </summary>
+        public CollectionViewSource courseSelectionViewSource;
 
         private bool _dataBaseDirty;
         private readonly StudentDbValidator _studentDbValidator;
@@ -69,6 +77,13 @@ namespace StudentManageSystem
         private readonly MajorDbValidator _majorValidator;
         private ObservableCollection<Major> _majorDataSource;
         private NewMajorWindow? _newMajorWindow;
+        
+        // TODO: 新课程和选课窗口
+        private readonly CourseDbValidator _courseDbValidator;
+        private ObservableCollection<Course> _courseDataSource;
+
+        private readonly CourseSelectionDbValidator _courseSelectionDbValidator;
+        private ObservableCollection<CourseSelection> _courseSelectionDataSource;
 
         private IQueryable<Student>? _lastQuery;
 
@@ -88,20 +103,32 @@ namespace StudentManageSystem
             // 初始化数据库
             studentDataBase = new StudentDataBase();
             studentDataBase.Database.Migrate();
+            
             studentDataBase.Students.Load();
             _studentDbValidator = new StudentDbValidator(studentDataBase);
+
             studentDataBase.Classes.Load();
             _classValidator = new ClassDbValidator(studentDataBase);
+            
             studentDataBase.Departments.Load();
             _departmentValidator = new DepartmentDbValidator(studentDataBase);
+            
             studentDataBase.Majors.Load();
             _majorValidator = new MajorDbValidator(studentDataBase);
+            
+            studentDataBase.Courses.Load();
+            _courseDbValidator = new CourseDbValidator(studentDataBase);
+
+            studentDataBase.Selections.Load();
+            _courseSelectionDbValidator = new CourseSelectionDbValidator(studentDataBase);
 
             // 获取或设置XAML资源
             studentViewSource = (CollectionViewSource)FindResource(nameof(studentViewSource));
             classViewSource = (CollectionViewSource)FindResource(nameof(classViewSource));
             departmentViewSource = (CollectionViewSource)FindResource(nameof(departmentViewSource));
             majorViewSource = (CollectionViewSource)FindResource(nameof(majorViewSource));
+            courseViewSource = (CollectionViewSource)FindResource(nameof(courseViewSource));
+            courseSelectionViewSource = (CollectionViewSource)FindResource(nameof(courseSelectionViewSource));
             DataBaseDirty = false;
             studentGender.ItemsSource = new[] { "男", "女" };
             SqlViewer.OnSqlUpdated += () => sqlList.ItemsSource = SqlViewer.SqlStatements;
@@ -117,15 +144,24 @@ namespace StudentManageSystem
             _studentDataSource = studentDataBase.Students.Local.ToObservableCollection();
             // InitVisitors(_studentDataSource);
             studentViewSource.Source = _studentDataSource;
+
             _classDataSource = studentDataBase.Classes.Local.ToObservableCollection();
             InitVisitors(_classDataSource);
             classViewSource.Source = _classDataSource;
+
             _departmentDataSource = studentDataBase.Departments.Local.ToObservableCollection();
             // InitVisitors(_departmentDataSource);
             departmentViewSource.Source = _departmentDataSource;
+
             _majorDataSource = studentDataBase.Majors.Local.ToObservableCollection();
             InitVisitors(_majorDataSource);
             majorViewSource.Source = _majorDataSource;
+
+            _courseDataSource = studentDataBase.Courses.Local.ToObservableCollection();
+            courseViewSource.Source = _courseDataSource;
+
+            _courseSelectionDataSource = studentDataBase.Selections.Local.ToObservableCollection();
+            courseSelectionViewSource.Source = _courseSelectionDataSource;
 
         }
 
@@ -213,6 +249,8 @@ namespace StudentManageSystem
             info.AddOrConcat(_classValidator.ValidateRange(_classDataSource));
             info.AddOrConcat(_majorValidator.ValidateRange(_majorDataSource));
             info.AddOrConcat(_departmentValidator.ValidateRange(_departmentDataSource));
+            info.AddOrConcat(_courseDbValidator.ValidateRange(_courseDataSource));
+            info.AddOrConcat(_courseSelectionDbValidator.ValidateRange(_courseSelectionDataSource));
             ErrorMsg.Text = info;
             return info;
         }
@@ -243,7 +281,7 @@ namespace StudentManageSystem
             CheckDataValid();
         }
 
-        private void RevertAllButton_Click(object sender, RoutedEventArgs e)
+        private void RevertAll(object sender, RoutedEventArgs e)
         {
             var reverted = RollBack(studentDataBase);
             Debug.WriteLine($"{reverted} Changes removed.");
@@ -251,7 +289,7 @@ namespace StudentManageSystem
             RefreshDataGrid();
         }
 
-        private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
+        private void SaveChanges(object sender, RoutedEventArgs e)
         {
             studentDataBase.SaveChanges();
             DataBaseDirty = false;
@@ -261,7 +299,7 @@ namespace StudentManageSystem
 
         private void DatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e) => DetectChange();
 
-        private void AddStudentButton_Click(object sender, RoutedEventArgs e)
+        private void AddStudent(object sender, RoutedEventArgs e)
         {
             _newStudentWindow ??= new NewStudentWindow(studentDataBase);
             _newStudentWindow.Closed += (_, _) =>
@@ -273,7 +311,7 @@ namespace StudentManageSystem
             _newStudentWindow.Activate();
         }
 
-        private void RemoveStudentButton_Click(object sender, RoutedEventArgs e)
+        private void RemoveStudent(object sender, RoutedEventArgs e)
         {
             foreach (var student in studentsDataGrid.SelectedItems.OfType<Student>().ToArray())
             {
@@ -282,7 +320,7 @@ namespace StudentManageSystem
             DetectChange();
         }
 
-        private void AddClassButton_Click(object sender, RoutedEventArgs e)
+        private void AddClass(object sender, RoutedEventArgs e)
         {
             _newClassWindow ??= new NewClassWindow(studentDataBase, _classDataSource.Max(c => c.ClassId) + 1);
             _newClassWindow.Closed += (_, _) =>
@@ -294,7 +332,7 @@ namespace StudentManageSystem
             _newClassWindow.Activate();
         }
 
-        private void RemoveClassButton_Click(object sender, RoutedEventArgs e)
+        private void RemoveClass(object sender, RoutedEventArgs e)
         {
             foreach (var naturalClass in classDataGrid.SelectedItems.OfType<NaturalClass>().ToArray())
             {
@@ -303,7 +341,7 @@ namespace StudentManageSystem
             DetectChange();
         }
 
-        private void AddDepartmentButton_Click(object sender, RoutedEventArgs e)
+        private void AddDepartment(object sender, RoutedEventArgs e)
         {
             _newDepartmentWindow ??= new NewDepartmentWindow(studentDataBase);
             _newDepartmentWindow.Closed += (_, _) =>
@@ -315,7 +353,7 @@ namespace StudentManageSystem
             _newDepartmentWindow.Activate();
         }
 
-        private void RemoveDepartmentButton_Click(object sender, RoutedEventArgs e)
+        private void RemoveDepartment(object sender, RoutedEventArgs e)
         {
             foreach (var department in departmentDataGrid.SelectedItems.OfType<Department>().ToArray())
             {
@@ -324,7 +362,7 @@ namespace StudentManageSystem
             DetectChange();
         }
 
-        private void AddMajor_Click(object sender, RoutedEventArgs e)
+        private void AddMajor(object sender, RoutedEventArgs e)
         {
             _newMajorWindow ??= new NewMajorWindow(studentDataBase);
             _newMajorWindow.Closed += (_, _) =>
@@ -336,13 +374,33 @@ namespace StudentManageSystem
             _newMajorWindow.Activate();
         }
 
-        private void RemoveMajor_Click(object sender, RoutedEventArgs e)
+        private void RemoveMajor(object sender, RoutedEventArgs e)
         {
             foreach (var major in majorGrid.SelectedItems.OfType<Major>().ToArray())
             {
                 _majorDataSource.Remove(major);
             }
             DetectChange();
+        }
+
+        private void AddCourse(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void RemoveCourse(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AddCourseSelection(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void RemoveCourseSelection(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private void ToggleQuery(object sender, RoutedEventArgs e)
@@ -386,5 +444,6 @@ namespace StudentManageSystem
         {
             SqlViewer.Clear();
         }
+
     }
 }

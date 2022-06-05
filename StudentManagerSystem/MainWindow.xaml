@@ -11,6 +11,8 @@
         <CollectionViewSource x:Key="classViewSource"/>
         <CollectionViewSource x:Key="departmentViewSource"/>
         <CollectionViewSource x:Key="majorViewSource"/>
+        <CollectionViewSource x:Key="courseViewSource"/>
+        <CollectionViewSource x:Key="courseSelectionViewSource"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -24,7 +26,8 @@
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <!--学生表-->
         <DataGrid x:Name="studentsDataGrid" AutoGenerateColumns="False" 
@@ -57,9 +60,9 @@
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
-            <Button x:Name="AddStudentButton" Content="+" Click="AddStudentButton_Click"
+            <Button x:Name="AddStudentButton" Content="+" Click="AddStudent"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-            <Button x:Name="RemoveStudentButton" Content="-" Click="RemoveStudentButton_Click"
+            <Button x:Name="RemoveStudentButton" Content="-" Click="RemoveStudent"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
         <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
@@ -89,9 +92,9 @@
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
-            <Button x:Name="AddClassButton" Content="+" Click="AddClassButton_Click"
+            <Button x:Name="AddClassButton" Content="+" Click="AddClass"
                     HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-            <Button x:Name="RemoveClassButton" Content="-" Click="RemoveClassButton_Click"
+            <Button x:Name="RemoveClassButton" Content="-" Click="RemoveClass"
                     HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
         </StackPanel>
         <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
@@ -117,9 +120,9 @@
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 5">
-                <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartmentButton_Click"
+                <Button x:Name="AddDepartmentButton" Content="+" Click="AddDepartment"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-                <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartmentButton_Click"
+                <Button x:Name="RemoveDepartmentButton" Content="-" Click="RemoveDepartment"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
             </StackPanel>
             <GridSplitter Grid.Row="1" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" 
@@ -139,26 +142,77 @@
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,5,5,5">
-                <Button x:Name="AddMajorButton" Content="+" Click="AddMajor_Click"
+                <Button x:Name="AddMajorButton" Content="+" Click="AddMajor"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
-                <Button x:Name="RemoveMajorButton" Content="-" Click="RemoveMajor_Click"
+                <Button x:Name="RemoveMajorButton" Content="-" Click="RemoveMajor"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
             </StackPanel>
         </Grid>
-        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="2">
+        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="3"
+                      ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent" Width="5" HorizontalAlignment="Left"/>
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Margin="5,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <!--可选课程表-->
+            <DataGrid x:Name="courseDataGrid" Grid.Row="0" Grid.Column="0" Margin="0,5" AutoGenerateColumns="False"
+                      EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                      RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                      ItemsSource="{Binding Source={StaticResource courseViewSource}}"
+                      CurrentCellChanged="DataGridCellChanged"
+                      MouseDown="DataGridMouseDown">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="课程编号" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"></DataGridTextColumn>
+                    <DataGridTextColumn Header="课程名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 5">
+                <Button Content="+" Click="AddCourse"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+                <Button Content="-" Click="RemoveCourse"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            </StackPanel>
+            <GridSplitter Grid.Row="1" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" 
+                          Height="5" VerticalAlignment="Bottom"
+                          HorizontalAlignment="Stretch"/>
+            <!--选课表-->
+            <DataGrid x:Name="courseSelectionGrid" Grid.Row="2" Margin="0,5" AutoGenerateColumns="False"
+                      EnableRowVirtualization="False" EnableColumnVirtualization="False"
+                      RowDetailsVisibilityMode="VisibleWhenSelected" CanUserAddRows="False"
+                      ItemsSource="{Binding Source={StaticResource courseSelectionViewSource}}"
+                      CurrentCellChanged="DataGridCellChanged"
+                      MouseDown="DataGridMouseDown">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="选课编号" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"></DataGridTextColumn>
+                    <DataGridTextColumn Header="学号" Width="Auto" Binding="{Binding StudentId}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="课程名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,5,5,5">
+                <Button Content="+" Click="AddCourseSelection"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+                <Button Content="-" Click="RemoveCourseSelection"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="30" />
+            </StackPanel>
+        </Grid>
+        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" BorderBrush="Gray" BorderThickness="2">
             <StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Center">
-                <Button x:Name="RevertAllButton" Content="重置↺" Click="RevertAllButton_Click"
+                <Button x:Name="RevertAllButton" Content="重置↺" Click="RevertAll"
                         Height="30" Width="40"/>
-                <Button x:Name="SaveChangesButton" Content="保存💾" Click="SaveChangesButton_Click"
+                <Button x:Name="SaveChangesButton" Content="保存💾" Click="SaveChanges"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Width="160" Height="30"/>
                 <Button Content="查询🔍" Click="ToggleQuery"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Width="40" Height="30"></Button>
             </StackPanel>
         </Border>
-        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="5" BorderBrush="Wheat">
+        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" BorderThickness="5" BorderBrush="Wheat">
             <TextBlock x:Name="ErrorMsg" Text="" />
         </Border>
-        <Grid x:Name="queryGrid" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+        <Grid x:Name="queryGrid" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
@@ -184,12 +238,12 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        <GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"
+        <GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="4"
                       ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent" Width="5" HorizontalAlignment="Left"/>
-        <GroupBox Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" Margin="5,5" Width="Auto" Header="Sql语句">
+        <GroupBox Grid.Row="0" Grid.RowSpan="5" Grid.Column="4" Margin="5,5" Width="Auto" Header="Sql语句">
             <ListBox x:Name="sqlList"/>
         </GroupBox>
-        <Button Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" 
+        <Button Grid.Row="0" Grid.RowSpan="5" Grid.Column="4"
                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Width="Auto" Height="Auto" Margin="11"
                 Click="ClearSqlViewer"
