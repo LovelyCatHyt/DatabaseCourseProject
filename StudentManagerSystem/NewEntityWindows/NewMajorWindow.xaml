@@ -13,18 +13,20 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" Margin="2.5">
-            <StackPanel Orientation="Horizontal">
-                <Label Width="100">院系</Label>
-                <ComboBox x:Name="DepartmentNameTxtCbBox" Width="200" SelectedValue="{Binding DepartmentName, Mode=TwoWay}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Width="100">专业名</Label>
-                <TextBox x:Name="MajorNameTxt" Width="200" Text="{Binding MajorName}"/>
-            </StackPanel>
-        </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition  Width="100"/>
+            <ColumnDefinition  Width="200"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0">院系</Label>
+        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="DepartmentNameTxtCbBox" Width="200" SelectedValue="{Binding DepartmentName, Mode=TwoWay}"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Width="100">专业名</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="MajorNameTxt" Width="200" Text="{Binding MajorName}"/>
+        
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
             <Button Content="确定" Click="Confirm" Height="Auto"></Button>
             <Button Content="取消" Click="Cancel" Height="Auto"></Button>
         </StackPanel>

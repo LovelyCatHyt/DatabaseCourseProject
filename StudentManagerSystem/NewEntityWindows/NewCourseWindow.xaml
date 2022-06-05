@@ -1,0 +1,34 @@
+<Window x:Class="StudentManageSystem.NewCourseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StudentManageSystem"
+        mc:Ignorable="d"
+        Width="Auto"
+        Height="Auto"
+        SizeToContent="WidthAndHeight"
+        Title="学生管理系统-新课程">
+    <Grid Margin="2.5" Width="Auto" Height="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition  Width="100"/>
+            <ColumnDefinition  Width="200"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0">课程编号</Label>
+        <TextBox Grid.Row="0" Grid.Column="1"  Width="200" Text="{Binding Id, Mode=TwoWay}" IsReadOnly="True"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Width="100">课程名</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="MajorNameTxt" Width="200" Text="{Binding Name}"/>
+
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="2.5">
+            <Button Content="确定" Click="Confirm" Height="Auto"></Button>
+            <Button Content="取消" Click="Cancel" Height="Auto"></Button>
+        </StackPanel>
+    </Grid>
+</Window>

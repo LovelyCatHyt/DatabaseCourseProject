@@ -77,10 +77,11 @@ namespace StudentManageSystem
         private readonly MajorDbValidator _majorValidator;
         private ObservableCollection<Major> _majorDataSource;
         private NewMajorWindow? _newMajorWindow;
-        
+
         // TODO: 新课程和选课窗口
         private readonly CourseDbValidator _courseDbValidator;
         private ObservableCollection<Course> _courseDataSource;
+        private NewCourseWindow? _newCourseWindow;
 
         private readonly CourseSelectionDbValidator _courseSelectionDbValidator;
         private ObservableCollection<CourseSelection> _courseSelectionDataSource;
@@ -103,19 +104,19 @@ namespace StudentManageSystem
             // 初始化数据库
             studentDataBase = new StudentDataBase();
             studentDataBase.Database.Migrate();
-            
+
             studentDataBase.Students.Load();
             _studentDbValidator = new StudentDbValidator(studentDataBase);
 
             studentDataBase.Classes.Load();
             _classValidator = new ClassDbValidator(studentDataBase);
-            
+
             studentDataBase.Departments.Load();
             _departmentValidator = new DepartmentDbValidator(studentDataBase);
-            
+
             studentDataBase.Majors.Load();
             _majorValidator = new MajorDbValidator(studentDataBase);
-            
+
             studentDataBase.Courses.Load();
             _courseDbValidator = new CourseDbValidator(studentDataBase);
 
@@ -385,12 +386,23 @@ namespace StudentManageSystem
 
         private void AddCourse(object sender, RoutedEventArgs e)
         {
-            
+            _newCourseWindow ??= new NewCourseWindow(studentDataBase, _courseDataSource.Any() ? _courseDataSource.Max(c => c.Id) + 1 : 1);
+            _newCourseWindow.Closed += (_, _) =>
+            {
+                DetectChange();
+                _newCourseWindow = null;
+            };
+            _newCourseWindow.Show();
+            _newCourseWindow.Activate();
         }
 
         private void RemoveCourse(object sender, RoutedEventArgs e)
         {
-
+            foreach (var course in courseDataGrid.SelectedItems.OfType<Course>().ToArray())
+            {
+                _courseDataSource.Remove(course);
+            }
+            DetectChange();
         }
 
         private void AddCourseSelection(object sender, RoutedEventArgs e)
