@@ -85,6 +85,9 @@ namespace StudentManageSystem.DataBase
             modelBuilder.Entity<Department>()
                 .HasIndex(d => d.Name)
                 .IsUnique();
+            modelBuilder.Entity<CourseSelection>()
+                .HasIndex(cs => new {cs.StudentId, cs.CourseId})
+                .IsUnique();
 
             // 种子数据, 但不包含直接的引用
             // 一个问题: 为啥 Id=0 会抛异常?

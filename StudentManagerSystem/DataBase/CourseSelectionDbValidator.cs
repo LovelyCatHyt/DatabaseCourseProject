@@ -22,26 +22,36 @@ namespace StudentManageSystem.DataBase
         public override int IdOfEntity(CourseSelection entity) => entity.Id;
 
         public override string NameOfEntity(CourseSelection entity) =>
-            $"{entity.Student.Name}(Ñ§ºÅ: {entity.StudentId})µÄÑ¡¿Î{entity.CourseId}";
+            $"{entity.Student.Name}(å­¦å·: {entity.StudentId})çš„é€‰è¯¾{entity.CourseId}";
 
         public override InfoGroup ValidateData(CourseSelection data)
         {
             var info = new InfoGroup();
-            // ¼ì²éÍâ¼ü
+            // æ£€æŸ¥å¤–é”®
             if (!_students.Any(s => s.Id == data.StudentId))
             {
-                info.AddOrConcat(new Info($"{NameOfEntity(data)}: Ñ§ºÅ{data.StudentId}²»´æÔÚ!"));
+                info.AddOrConcat(new Info($"{NameOfEntity(data)}: å­¦å·{data.StudentId}ä¸å­˜åœ¨!"));
             }
             if (!_courses.Any(c => c.Id == data.CourseId))
             {
-                info.AddOrConcat(new Info($"{NameOfEntity(data)}: ¿Î³ÌºÅ{data.CourseId}²»´æÔÚ!"));
+                info.AddOrConcat(new Info($"{NameOfEntity(data)}: è¯¾ç¨‹å·{data.CourseId}ä¸å­˜åœ¨!"));
             }
 
             return info;
         }
 
+        protected override InfoGroup ValidateNewData(CourseSelection data, string idDuplicatedErrorMsg)
+        {
+            var info = base.ValidateNewData(data, idDuplicatedErrorMsg);
+            if (_entities.Any(e => e.StudentId == data.StudentId && e.CourseId == data.CourseId))
+            {
+                info.AddOrConcat(new Error($"é€‰è¯¾ {NameOfEntity(data)}: é€‰è¯¾é‡å¤!"));
+            }
+            return info;
+        }
+
         public override InfoGroup ValidateRangeNew(IEnumerable<CourseSelection> dataEnumerable) =>
-            ValidateRangeNew(dataEnumerable, "{0}: Ñ¡¿ÎId{1}ÒÑ±»Õ¼ÓÃ!");
+            ValidateRangeNew(dataEnumerable, "{0}: é€‰è¯¾Id{1}å·²è¢«å ç”¨!");
 
     }
 }

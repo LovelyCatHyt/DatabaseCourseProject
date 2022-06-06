@@ -77,8 +77,7 @@ namespace StudentManageSystem
         private readonly MajorDbValidator _majorValidator;
         private ObservableCollection<Major> _majorDataSource;
         private NewMajorWindow? _newMajorWindow;
-
-        // TODO: 新课程和选课窗口
+        
         private readonly CourseDbValidator _courseDbValidator;
         private ObservableCollection<Course> _courseDataSource;
         private NewCourseWindow? _newCourseWindow;
@@ -162,6 +161,7 @@ namespace StudentManageSystem
             courseViewSource.Source = _courseDataSource;
 
             _courseSelectionDataSource = studentDataBase.Selections.Local.ToObservableCollection();
+            InitVisitors(_courseSelectionDataSource);
             courseSelectionViewSource.Source = _courseSelectionDataSource;
 
         }
@@ -419,6 +419,7 @@ namespace StudentManageSystem
             {
                 Course = null!, CourseId = 0, Id = newId, Student = selectedStudent!, StudentId = selectedStudent!.Id
             };
+            newCourseSelection.Init(studentDataBase);
             _courseSelectionDataSource.Add(newCourseSelection);
         }
 

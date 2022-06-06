@@ -19,5 +19,7 @@ namespace StudentManageSystem.Entities
         /// 课程名
         /// </summary>
         public string Name { get; set; } = "";
+
+        public override string ToString() => $"[{Id}]{Name}";
     }
 }
