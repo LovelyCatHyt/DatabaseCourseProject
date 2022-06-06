@@ -14,5 +14,7 @@ namespace StudentManageSystem.Entities
         /// 院系类别
         /// </summary>
         public string DepartmentType { get; set; } = "";
+
+        public override string ToString() => Name;
     }
 }

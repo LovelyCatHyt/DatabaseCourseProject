@@ -31,7 +31,7 @@ namespace StudentManageSystem.Entities
             get
             {
                 // Debug.WriteLine($"get {MajorName}.DepartmentName when (_context == null) is {_context == null}");
-                if (_context == null) return "";
+                if (_context == null) return DepartmentId.ToString();
                 return _context.Set<Department>().First(d=>d.DepartmentId == DepartmentId).Name;
             }
             set
@@ -58,5 +58,7 @@ namespace StudentManageSystem.Entities
         private DbContext? _context;
 
         public void Init(DbContext ctx) => _context = ctx;
+
+        public override string ToString() => $"{DepartmentName}-{MajorName}";
     }
 }

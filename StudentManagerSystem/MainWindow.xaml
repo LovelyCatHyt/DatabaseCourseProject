@@ -23,9 +23,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
@@ -57,6 +57,15 @@
                                     Width="Auto"/>
                 <DataGridComboBoxColumn x:Name="studentClass" Header="班级" SelectedValueBinding="{Binding ClassId,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                     Width="Auto"/>
+                <DataGridTemplateColumn Header="详情" Width="1*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="detailButton" Click="ShowDetail" Content="..." HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="2.5"></Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
@@ -77,7 +86,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="班级号" Width="Auto" Binding="{Binding ClassId}" IsReadOnly="True"/>
                 <DataGridComboBoxColumn x:Name="classDepartmentName" Header="院系" Width="Auto" SelectedValueBinding="{Binding DepartmentName}" />
-                <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="Auto" SelectedValueBinding="{Binding MajorName}">
+                <DataGridComboBoxColumn x:Name="ClassMajorName" Header="专业" Width="1*" SelectedValueBinding="{Binding MajorName}">
                     <DataGridComboBoxColumn.ElementStyle>
                         <Style TargetType="ComboBox">
                             <Setter Property="ItemsSource" Value="{Binding MajorNames}"/>
@@ -116,7 +125,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="院系号" Width="Auto" Binding="{Binding DepartmentId}"></DataGridTextColumn>
                     <DataGridTextColumn Header="院系名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="院系类别" Width="Auto" Binding="{Binding DepartmentType}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="院系类别" Width="1*" Binding="{Binding DepartmentType}"></DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 5">
@@ -138,7 +147,7 @@
                 <DataGrid.Columns>
                     <!--由于完整性约束, 这两个属性的修改非常麻烦, 因此目前不给修改-->
                     <DataGridTextColumn IsReadOnly="True" Header="院系" Width="Auto" Binding="{Binding DepartmentName}"/>
-                    <DataGridTextColumn IsReadOnly="True" Header="专业名字" Width="Auto" Binding="{Binding MajorName}"/>
+                    <DataGridTextColumn IsReadOnly="True" Header="专业名" Width="1*" Binding="{Binding MajorName}"/>
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,5,5,5">
@@ -166,7 +175,7 @@
                       MouseDown="DataGridMouseDown">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="课程编号" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"></DataGridTextColumn>
-                    <DataGridTextColumn Header="课程名称" Width="Auto" Binding="{Binding Name}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="课程名称" Width="1*" Binding="{Binding Name}"></DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0, 5">
@@ -188,7 +197,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="选课编号" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"></DataGridTextColumn>
                     <DataGridTextColumn Header="学号" Width="Auto" Binding="{Binding StudentId}" IsReadOnly="True"></DataGridTextColumn>
-                    <DataGridComboBoxColumn Header="课程号" Width="Auto" SelectedValueBinding="{Binding SelectedCourse}">
+                    <DataGridComboBoxColumn Header="课程号" Width="1*" SelectedValueBinding="{Binding SelectedCourse}">
                         <DataGridComboBoxColumn.ElementStyle>
                             <Style TargetType="ComboBox">
                                 <Setter Property="ItemsSource" Value="{Binding AvailableCourses}"/>

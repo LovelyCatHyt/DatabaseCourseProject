@@ -49,7 +49,7 @@ namespace StudentManageSystem.Entities
         /// 院系
         /// <para>导航属性</para>
         /// </summary>
-        public Department? Department { get; set; }
+        public Department Department { get; set; }
         /// <summary>
         /// 专业名
         /// <para>外键</para>
@@ -62,7 +62,7 @@ namespace StudentManageSystem.Entities
         /// 专业
         /// <para>导航属性</para>
         /// </summary>
-        public Major? Major { get; set; }
+        public Major Major { get; set; }
         
         /// <summary>
         /// 数据库上下文
@@ -73,5 +73,7 @@ namespace StudentManageSystem.Entities
         /// </summary>
         /// <param name="context"></param>
         public void Init(DbContext context) => _context = context;
+
+        public override string ToString() => $"{MajorName}{ClassId}班";
     }
 }

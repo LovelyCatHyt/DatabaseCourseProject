@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using StudentManageSystem.DataBase;
 using StudentManageSystem.Entities;
@@ -65,6 +66,7 @@ namespace StudentManageSystem
         private readonly StudentDbValidator _studentDbValidator;
         private ObservableCollection<Student> _studentDataSource;
         private NewStudentWindow? _newStudentWindow;
+        private StudentDetailWindow? _studentDetailWindow;
 
         private readonly ClassDbValidator _classValidator;
         private ObservableCollection<NaturalClass> _classDataSource;
@@ -84,7 +86,7 @@ namespace StudentManageSystem
 
         private readonly CourseSelectionDbValidator _courseSelectionDbValidator;
         private ObservableCollection<CourseSelection> _courseSelectionDataSource;
-
+        
         private IQueryable<Student>? _lastQuery;
 
         /// <summary>
@@ -474,5 +476,25 @@ namespace StudentManageSystem
             SqlViewer.Clear();
         }
 
+        private void ShowDetail(object sender, RoutedEventArgs e)
+        {
+            for (var vis = sender as Visual; vis != null; vis = VisualTreeHelper.GetParent(vis) as Visual)
+            {
+                if (vis is DataGridRow row)
+                {
+                    var index = row.GetIndex();
+                    _studentDetailWindow ??=
+                        new StudentDetailWindow(_studentDataSource[index], studentDataBase);
+                    _studentDetailWindow.Closed += (_, _) =>
+                    {
+                        DetectChange();
+                        _studentDetailWindow = null;
+                    };
+                    _studentDetailWindow.Show();
+                    _studentDetailWindow.Activate();
+                    break;
+                }
+            }
+        }
     }
 }
